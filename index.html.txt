@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بوابة طالب صيدلة - جامعة دراية</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Cairo', sans-serif; background-color: #f8fafc; color: #0f172a; scroll-behavior: smooth; }
+        .academic-navy { background-color: #0f172a; }
+        .subject-card { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid #e2e8f0; border-radius: 1.5rem; overflow: hidden; background: white; }
+        .subject-card:hover { transform: translateY(-8px); border-color: #2563eb; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+        .wide-container { max-width: 90%; margin: 0 auto; }
+        .dropdown:hover .dropdown-menu { display: block; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        .timer-card { background: #ffffff; border-right: 6px solid #0f172a; border-radius: 1rem; min-width: 280px; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fadeIn { animation: fadeIn 0.6s ease-out forwards; }
+        #secret-trigger { cursor: pointer; user-select: none; transition: transform 0.2s; }
+        #secret-trigger:active { transform: scale(0.95); }
+        .upload-bar { height: 8px; background: #f1f5f9; border-radius: 10px; overflow: hidden; display: none; margin-top: 10px; }
+        .upload-fill { height: 100%; background: #2563eb; width: 0%; transition: width 0.3s; }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <nav class="academic-navy text-white shadow-2xl sticky top-0 z-50 py-10 px-4">
+        <div class="wide-container flex flex-col items-center gap-6 text-center">
+            <div onclick="handleSecretClick()" id="secret-trigger">
+                <h1 class="text-4xl md:text-6xl font-black tracking-tight mb-2">جامعة دراية</h1>
+                <div class="h-1.5 w-32 bg-blue-500 mx-auto mb-3 rounded-full shadow-lg"></div>
+                <p class="text-xs md:text-sm opacity-70 uppercase tracking-[0.3em] font-semibold">كلية الصيدلة | Faculty of Pharmacy</p>
+            </div>
+            
+            <div class="flex items-center justify-center gap-4 md:gap-8 border-t border-white/10 pt-6 w-full max-w-xl">
+                <button onclick="showHome()" class="hover:text-blue-400 transition font-bold text-base md:text-lg">الرئيسية</button>
+                <div class="relative dropdown">
+                    <button class="hover:text-blue-400 transition font-bold text-base md:text-lg flex items-center gap-2">
+                        <span>المواد</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" /></svg>
+                    </button>
+                    <div id="nav-dropdown" class="dropdown-menu hidden absolute left-1/2 -translate-x-1/2 mt-4 w-64 bg-white rounded-2xl shadow-2xl py-4 z-50 border border-slate-200 overflow-hidden text-right text-slate-800 font-bold"></div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- UI Main Content -->
+    <main class="wide-container px-4 py-12 md:py-20">
+        
+        <!-- HOME SECTION -->
+        <div id="home-page" class="space-y-24">
+            <!-- News Feed -->
+            <section class="animate-fadeIn">
+                <div class="text-center mb-10"><h2 class="text-2xl md:text-3xl font-bold text-slate-800 border-b-4 border-blue-600 inline-block pb-2 px-6">News | التنبيهات</h2></div>
+                <div id="news-list" class="flex flex-col gap-4 max-w-4xl mx-auto">
+                    <!-- Fallback if database not connected yet -->
+                    <div class="p-6 bg-white border-r-8 border-blue-900 shadow-sm rounded-2xl text-center font-medium">أهلاً بكم في بوابة صيدلة دراية. سجل دخول الدكتور لإضافة التنبيهات.</div>
+                </div>
+            </section>
+
+            <!-- Quiz Countdown -->
+            <section class="animate-fadeIn">
+                <div class="text-center mb-10"><h2 class="text-2xl md:text-3xl font-bold text-slate-800 border-b-4 border-slate-800 inline-block pb-2 px-6">Quiz Countdown</h2></div>
+                <div id="countdown-scroll" class="flex flex-row gap-6 overflow-x-auto pb-8 scrollbar-hide px-4"></div>
+            </section>
+
+            <!-- Subject Grid -->
+            <section class="animate-fadeIn">
+                <div class="text-center mb-16"><h2 class="text-3xl md:text-4xl font-black text-slate-900">المقررات الدراسية</h2></div>
+                <div id="subjects-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8 md:gap-10"></div>
+            </section>
+        </div>
+
+        <!-- LECTURES PAGE -->
+        <div id="lectures-page" class="hidden space-y-10 animate-fadeIn">
+            <div class="flex flex-col items-center py-16 bg-white border border-slate-200 rounded-[2.5rem] shadow-sm">
+                <h2 id="current-subject-title" class="text-4xl md:text-5xl font-black text-slate-900 mb-8">المادة</h2>
+                <button onclick="showHome()" class="bg-blue-600 text-white px-10 py-3 rounded-full font-bold shadow-lg transition-all">رجوع للرئيسية</button>
+            </div>
+            <div class="grid gap-5 max-w-4xl mx-auto" id="lectures-list"></div>
+        </div>
+
+        <!-- LECTURE DETAILS -->
+        <div id="lecture-details-page" class="hidden space-y-10 animate-fadeIn text-center">
+            <div class="bg-white p-12 md:p-20 rounded-[3rem] border border-slate-200 shadow-xl">
+                <h2 id="current-lecture-title" class="text-3xl md:text-4xl font-black text-slate-900 mb-4 font-mono uppercase tracking-tighter">Details</h2>
+                <button onclick="backToLectures()" class="text-blue-500 mb-16 flex items-center justify-center gap-2 mx-auto font-bold hover:underline">رجوع للقائمة</button>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                    <a id="link-file" href="#" target="_blank" class="flex flex-col items-center p-12 bg-slate-50 border-2 border-transparent rounded-[2rem] hover:bg-white hover:border-blue-600 transition-all opacity-30 pointer-events-none">
+                        <span class="font-black text-2xl">PDF File</span>
+                    </a>
+                    <a id="link-record" href="#" target="_blank" class="flex flex-col items-center p-12 bg-slate-50 border-2 border-transparent rounded-[2rem] hover:bg-white hover:border-blue-600 transition-all opacity-30 pointer-events-none">
+                        <span class="font-black text-2xl">Audio Record</span>
+                    </a>
+                    <button id="btn-quiz-start" class="flex flex-col items-center p-12 bg-slate-50 border-2 border-transparent rounded-[2rem] hover:bg-white hover:border-orange-600 transition-all opacity-30 pointer-events-none">
+                        <span class="font-black text-2xl">Start Quiz</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- QUIZ OVERLAY -->
+        <div id="quiz-page" class="hidden fixed inset-0 bg-slate-950/98 z-[100] flex items-center justify-center p-6">
+            <div class="bg-white w-full max-w-2xl rounded-[3rem] p-12 shadow-2xl relative overflow-hidden text-center">
+                <div class="absolute top-0 left-0 h-2.5 bg-blue-600 transition-all duration-1000" id="quiz-prog-bar" style="width: 100%;"></div>
+                <div class="flex justify-between items-center mb-12">
+                    <span id="quiz-step-text" class="bg-blue-100 text-blue-800 px-6 py-2 rounded-full text-sm font-black uppercase">Q1</span>
+                    <span id="quiz-timer" class="text-5xl font-black text-red-600 tabular-nums">30</span>
+                </div>
+                <h3 id="quiz-q-text" class="text-2xl md:text-3xl font-bold text-slate-900 mb-12 leading-relaxed min-h-[6rem]">جاري التحميل...</h3>
+                <div id="quiz-opts" class="grid gap-4"></div>
+            </div>
+        </div>
+
+        <!-- ADMIN PANEL -->
+        <div id="admin-panel" class="hidden mt-32 p-12 border-4 border-dashed border-blue-400 rounded-[3rem] bg-white shadow-2xl animate-fadeIn">
+            <div class="flex justify-between items-center mb-10 border-b-2 pb-6">
+                <h3 class="text-3xl md:text-4xl font-black text-blue-900">إدارة الموقع (Live)</h3>
+                <button onclick="location.reload()" class="bg-red-600 text-white px-8 py-3 rounded-2xl font-bold hover:bg-red-700">خروج</button>
+            </div>
+            
+            <div class="grid lg:grid-cols-2 gap-16 text-right">
+                <div class="space-y-6 bg-slate-50 p-10 rounded-[2.5rem] shadow-inner font-bold">
+                    <h4 class="text-2xl font-bold text-blue-800 mb-4 border-r-8 border-blue-600 pr-4 uppercase">1. الرفع السحابي</h4>
+                    <select id="adm-subj-sel" class="w-full p-4 rounded-2xl border-2 font-bold"></select>
+                    <input type="number" id="adm-lect-num" placeholder="رقم المحاضرة (1-12)" class="w-full p-4 rounded-2xl border-2 font-bold">
+                    
+                    <div class="bg-white p-4 rounded-2xl border-2">
+                        <label class="block text-xs text-slate-400 mb-2 uppercase">PDF File</label>
+                        <input type="file" id="f-input" class="w-full text-xs">
+                        <div id="pb1-box" class="upload-bar"><div id="pb1-fill" class="upload-fill"></div></div>
+                    </div>
+
+                    <div class="bg-white p-4 rounded-2xl border-2">
+                        <label class="block text-xs text-slate-400 mb-2 uppercase">Audio Record</label>
+                        <input type="file" id="r-input" class="w-full text-xs">
+                        <div id="pb2-box" class="upload-bar"><div id="pb2-fill" class="upload-fill"></div></div>
+                    </div>
+
+                    <button id="btn-save-all" onclick="handleUploadAndSave()" class="w-full bg-blue-600 text-white font-black py-5 rounded-2xl shadow-xl hover:bg-blue-700 text-xl transition-all">رفع وحفظ التعديلات</button>
+                </div>
+
+                <div class="space-y-6 bg-slate-50 p-10 rounded-[2.5rem] shadow-inner font-bold">
+                    <h4 class="text-2xl font-bold text-orange-800 mb-4 border-r-8 border-orange-600 pr-4 uppercase">2. أسئلة الكويز</h4>
+                    <textarea id="adm-q-txt" placeholder="اكتب السؤال هنا..." class="w-full p-5 rounded-2xl border-2 h-32 font-bold text-lg"></textarea>
+                    <div class="space-y-3">
+                        <input type="text" id="adm-a0" placeholder="الإجابة الصحيحة" class="p-4 border-2 border-green-200 rounded-2xl bg-green-50 font-bold w-full">
+                        <input type="text" id="adm-a1" placeholder="خيار خطأ 1" class="p-4 border-2 rounded-2xl w-full bg-white">
+                        <input type="text" id="adm-a2" placeholder="خيار خطأ 2" class="p-4 border-2 rounded-2xl w-full bg-white">
+                    </div>
+                    <button onclick="addQuizQuestionLive()" class="w-full bg-orange-600 text-white font-black py-5 rounded-2xl shadow-xl hover:bg-orange-700 text-xl">إضافة السؤال فوراً</button>
+                </div>
+            </div>
+
+            <div class="mt-16 bg-slate-900 text-white p-12 rounded-[3rem] shadow-2xl text-right">
+                <h4 class="text-2xl font-bold mb-6 flex items-center gap-3 text-right"><span>📢</span> تحديث التنبيهات للطلاب</h4>
+                <div class="flex flex-col md:flex-row gap-6">
+                    <textarea id="adm-n-input" class="flex-1 p-6 rounded-2xl text-slate-900 font-bold text-lg" placeholder="اكتب الخبر بالعامية هنا..."></textarea>
+                    <button onclick="postNewsLive()" class="bg-blue-500 px-12 py-6 rounded-2xl font-black text-xl hover:bg-blue-400 transition-all">نشر الخبر</button>
+                </div>
+                <button onclick="clearAllNews()" class="mt-6 text-xs text-red-400 hover:text-red-200 underline font-bold uppercase tracking-widest text-right">مسح كافة الأخبار القديمة</button>
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+        import { getFirestore, doc, setDoc, getDoc, onSnapshot, arrayUnion, deleteDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+        import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-storage.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+
+        // --- املأ البيانات أدناه من إعدادات مشروعك في Firebase ---
+        const config = { 
+            apiKey: "", 
+            authDomain: "", 
+            projectId: "", 
+            storageBucket: "", 
+            messagingSenderId: "", 
+            appId: "" 
+        };
+
+        const subjects = [
+            { name: "Pathology", days: 2, img: "https://images.unsplash.com/photo-1581594693702-fbdc51b2763b?w=600" },
+            { name: "Pharma 2", days: 5, img: "https://images.unsplash.com/photo-1576086213369-97a306d36557?w=600" },
+            { name: "Microbiology", days: 7, img: "https://images.unsplash.com/photo-1581093588401-fbb62a02f120?w=600" },
+            { name: "Bio chemistry 2", days: 10, img: "https://images.unsplash.com/photo-1530026405186-ed1f139313f8?w=600" },
+            { name: "Physiology 2", days: 14, img: "https://images.unsplash.com/photo-1559757175-5700dde675bc?w=600" },
+            { name: "Dosage form 2", days: 18, img: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=600" },
+            { name: "Dynamic team work", days: 22, img: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600" },
+            { name: "Scientific thinking", days: 28, img: "https://images.unsplash.com/photo-1493612276216-ee3925520721?w=600" },
+            { name: "Communication skills", days: 35, img: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600" }
+        ];
+
+        window.fb = { db: null, st: null, appId: "deraya-v1", doc, setDoc, getDoc, onSnapshot, arrayUnion, deleteDoc, ref, uploadBytesResumable, getDownloadURL };
+
+        function renderStaticUI() {
+            const dropdown = document.getElementById('nav-dropdown');
+            const adminSelect = document.getElementById('adm-subj-sel');
+            if(dropdown) dropdown.innerHTML = subjects.map(s => `<a href="#" onclick="showLectures('${s.name}')" class="block px-8 py-3 hover:bg-blue-50 border-b">${s.name}</a>`).join('');
+            if(adminSelect) adminSelect.innerHTML = subjects.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
+            
+            const countdown = document.getElementById('countdown-scroll');
+            if(countdown) countdown.innerHTML = [...subjects].sort((a,b)=>a.days-b.days).map(s => {
+                let color = s.days <= 2 ? 'text-red-600' : s.days <= 5 ? 'text-amber-500' : s.days <= 7 ? 'text-emerald-600' : 'text-blue-900';
+                return `<div class="min-w-[280px] timer-card p-8 shadow-sm flex items-center justify-between border border-slate-100 font-bold"><p class="text-lg">${s.name}</p><div class="text-center"><span class="text-5xl font-black ${color}">${s.days<10?'0'+s.days:s.days}</span><p class="text-[10px] text-slate-400 mt-1 uppercase">Days Left</p></div></div>`;
+            }).join('');
+            
+            const grid = document.getElementById('subjects-grid');
+            if(grid) grid.innerHTML = subjects.map(s => `<div onclick="showLectures('${s.name}')" class="subject-card cursor-pointer shadow-lg animate-fadeIn font-bold"><div class="h-44 overflow-hidden"><img src="${s.img}" class="w-full h-full object-cover transform hover:scale-110 transition duration-700" onerror="this.src='https://via.placeholder.com/400x200?text=${s.name}'"></div><div class="p-6 text-center text-lg">${s.name}</div></div>`).join('');
+        }
+
+        // 1. تشغيل الواجهة فوراً
+        renderStaticUI();
+
+        // 2. محاولة الاتصال بـ Firebase إذا كانت الإعدادات موجودة
+        if (config.apiKey && config.apiKey.length > 5) {
+            try {
+                const app = initializeApp(config);
+                window.fb.db = getFirestore(app);
+                window.fb.st = getStorage(app);
+                const auth = getAuth(app);
+                signInAnonymously(auth).then(() => {
+                    onAuthStateChanged(auth, (u) => { if(u) startListeners(); });
+                });
+            } catch(e) { console.error("Firebase Error: ", e); }
+        }
+
+        function startListeners() {
+            onSnapshot(doc(window.fb.db, 'artifacts', window.fb.appId, 'public', 'data', 'content', 'news_doc'), (sn) => {
+                const d = sn.data();
+                const newsList = document.getElementById('news-list');
+                if(newsList && d && d.items && d.items.length > 0) {
+                    newsList.innerHTML = [...d.items].reverse().map((n, i) => `<div class="p-8 bg-white border-r-[12px] ${i%2==0 ? 'border-blue-900' : 'border-slate-400'} shadow-lg rounded-2xl animate-fadeIn font-bold text-xl text-center">${n}</div>`).join('');
+                }
+            }, (err) => console.log("Snap error: ", err));
+        }
+    </script>
+
+    <script>
+        // --- ADMIN ACCESS ---
+        let clicks = 0; let stmr;
+        function handleSecretClick() {
+            clicks++; clearTimeout(stmr); stmr = setTimeout(() => clicks = 0, 2000);
+            if(clicks === 5) {
+                const pin = prompt("رمز الدكتور السري:");
+                if(pin === "1234") { 
+                    const panel = document.getElementById('admin-panel');
+                    panel.classList.remove('hidden'); 
+                    window.scrollTo({top: panel.offsetTop, behavior:'smooth'}); 
+                }
+            }
+        }
+
+        // --- NAVIGATION ---
+        function showHome() { 
+            document.getElementById('home-page').classList.remove('hidden');
+            document.getElementById('lectures-page').classList.add('hidden');
+            document.getElementById('lecture-details-page').classList.add('hidden');
+            window.scrollTo(0,0); 
+        }
+        function backToLectures() { 
+            document.getElementById('lecture-details-page').classList.add('hidden'); 
+            document.getElementById('lectures-page').classList.remove('hidden'); 
+        }
+        
+        function showLectures(subj) {
+            showHome(); 
+            document.getElementById('home-page').classList.add('hidden');
+            document.getElementById('lectures-page').classList.remove('hidden');
+            document.getElementById('current-subject-title').innerText = subj;
+            const l = document.getElementById('lectures-list'); l.innerHTML = '';
+            for(let i=1; i<=12; i++) {
+                const d = document.createElement('div');
+                d.className = "bg-white p-8 rounded-2xl border-2 border-slate-100 flex justify-between items-center hover:border-blue-600 hover:shadow-xl cursor-pointer transition-all";
+                d.onclick = () => openLectureDetails(subj, i);
+                d.innerHTML = `<div class="flex items-center gap-8 font-bold"><span class="text-xl text-slate-200">${i<10?'0'+i:i}</span><h4 class="text-2xl">Lecture ${i}</h4></div><div class="bg-blue-50 p-3 rounded-xl text-blue-600"><svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="3" d="M9 5l7 7-7 7"/></svg></div>`;
+                l.appendChild(d);
+            }
+        }
+
+        async function openLectureDetails(subj, num) {
+            document.getElementById('lectures-page').classList.add('hidden');
+            document.getElementById('lecture-details-page').classList.remove('hidden');
+            document.getElementById('current-lecture-title').innerText = `Lecture ${num} - ${subj}`;
+            
+            if(!window.fb.db) {
+                alert("واجهة العرض تعمل، لكن الروابط تتطلب إعداد Firebase أولاً.");
+                return;
+            }
+
+            const docId = `${subj}-${num}`.replace(/\s+/g, '-');
+            const snap = await window.fb.getDoc(window.fb.doc(window.fb.db, 'artifacts', window.fb.appId, 'public', 'data', 'content', docId));
+            const d = snap.data() || { file: null, record: null, quiz: [] };
+            
+            const f = document.getElementById('link-file'); 
+            f.href = d.file || "#"; 
+            f.style.opacity = d.file ? "1" : "0.2"; 
+            f.style.pointerEvents = d.file ? "auto" : "none";
+            
+            const r = document.getElementById('link-record'); 
+            r.href = d.record || "#"; 
+            r.style.opacity = d.record ? "1" : "0.2"; 
+            r.style.pointerEvents = d.record ? "auto" : "none";
+            
+            const qBtn = document.getElementById('btn-quiz-start');
+            qBtn.onclick = () => launchQuiz(d.quiz || []);
+            qBtn.style.opacity = (d.quiz && d.quiz.length > 0) ? "1" : "0.2";
+            qBtn.style.pointerEvents = (d.quiz && d.quiz.length > 0) ? "auto" : "none";
+        }
+
+        // --- QUIZ (30s) ---
+        let qT; let qI = 0; let qB = [];
+        function launchQuiz(b) { if(!b || b.length===0) return; qB = b; qI = 0; document.getElementById('quiz-page').classList.remove('hidden'); nextQ(); }
+        function nextQ() {
+            if(qI >= qB.length) { alert("انتهى الكويز!"); document.getElementById('quiz-page').classList.add('hidden'); return; }
+            const q = qB[qI];
+            document.getElementById('quiz-step-text').innerText = `Question ${qI+1}/${qB.length}`;
+            document.getElementById('quiz-q-text').innerText = q.text;
+            document.getElementById('quiz-opts').innerHTML = q.options.sort(()=>Math.random()-0.5).map(o => `<button onclick="handleQ()" class="w-full text-center p-6 border-2 border-slate-100 rounded-3xl hover:border-blue-600 hover:bg-blue-50 transition-all font-black text-xl bg-white">${o}</button>`).join('');
+            let left = 30; const t = document.getElementById('quiz-timer'); const b = document.getElementById('quiz-prog-bar');
+            clearInterval(qT); t.innerText = left; b.style.width = "100%";
+            qT = setInterval(() => { left--; t.innerText = left; b.style.width = (left/30*100)+"%"; if(left<=0){ handleQ(); } }, 1000);
+        }
+        function handleQ() { clearInterval(qT); qI++; nextQ(); }
+
+        // --- ADMIN ACTIONS ---
+        async function upFile(file, barId, boxId) {
+            if(!file) return null;
+            const path = `uploads/${window.fb.appId}/${Date.now()}_${file.name}`;
+            const ref = window.fb.ref(window.fb.st, path);
+            const task = window.fb.uploadBytesResumable(ref, file);
+            document.getElementById(boxId).style.display = 'block';
+            return new Promise((res, rej) => {
+                task.on('state_changed', s => document.getElementById(barId).style.width = (s.bytesTransferred/s.totalBytes)*100+'%', e => rej(e), () => window.fb.getDownloadURL(task.snapshot.ref).then(url => res(url)));
+            });
+        }
+
+        async function handleUploadAndSave() {
+            if(!window.fb.db) return alert("يرجى وضع بيانات Firebase أولاً.");
+            const s = document.getElementById('adm-subj-sel').value; const n = document.getElementById('adm-lect-num').value;
+            const f = document.getElementById('f-input').files[0]; const r = document.getElementById('r-input').files[0];
+            const btn = document.getElementById('btn-save-all');
+            if(!n) return alert("أدخل رقم المحاضرة");
+            btn.disabled = true; btn.innerText = "جاري الرفع...";
+            try {
+                const fUrl = await upFile(f, 'pb1-fill', 'pb1-box');
+                const rUrl = await upFile(r, 'pb2-fill', 'pb2-box');
+                const dId = `${s}-${n}`.replace(/\s+/g, '-');
+                const update = { subj: s, num: n, timestamp: Date.now() };
+                if(fUrl) update.file = fUrl; if(rUrl) update.record = rUrl;
+                await window.fb.setDoc(window.fb.doc(window.fb.db, 'artifacts', window.fb.appId, 'public', 'data', 'content', dId), update, { merge: true });
+                alert("تم الحفظ بنجاح!"); location.reload();
+            } catch (e) { alert("خطأ في الرفع."); btn.disabled = false; btn.innerText = "رفع وحفظ التعديلات"; }
+        }
+
+        async function addQuizQuestionLive() {
+            if(!window.fb.db) return alert("Config Missing!");
+            const s = document.getElementById('adm-subj-sel').value; const n = document.getElementById('adm-lect-num').value;
+            const t = document.getElementById('adm-q-txt').value;
+            const ops = [document.getElementById('adm-a0').value, document.getElementById('adm-a1').value, document.getElementById('adm-a2').value].filter(o=>o.trim()!=="");
+            if(!t || ops.length < 2 || !n) return alert("أكمل بيانات السؤال");
+            const dId = `${s}-${n}`.replace(/\s+/g, '-');
+            await window.fb.setDoc(window.fb.doc(window.fb.db, 'artifacts', window.fb.appId, 'public', 'data', 'content', dId), { quiz: window.fb.arrayUnion({ text: t, options: ops }) }, { merge: true });
+            alert("تمت إضافة السؤال!"); document.getElementById('adm-q-txt').value = '';
+        }
+
+        async function postNewsLive() {
+            if(!window.fb.db) return alert("Config Missing!");
+            const t = document.getElementById('adm-n-input').value; if(!t) return;
+            await window.fb.setDoc(window.fb.doc(window.fb.db, 'artifacts', window.fb.appId, 'public', 'data', 'content', 'news_doc'), { items: window.fb.arrayUnion(t) }, { merge: true });
+            alert("تم النشر!"); document.getElementById('adm-n-input').value = '';
+        }
+
+        async function clearAllNews() { if(confirm("حذف كل الأخبار؟")) { await window.fb.deleteDoc(window.fb.doc(window.fb.db, 'artifacts', window.fb.appId, 'public', 'data', 'content', 'news_doc')); alert("تم المسح!"); } }
+    </script>
+</body>
+</html>
