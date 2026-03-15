@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>بوابة صيدلة دراية - النسخة الاحترافية</title>
     
-    <!-- مكتبة التنسيق والخطوط -->
+    <!-- Tailwind CSS & Google Fonts -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     
@@ -15,7 +15,7 @@
         
         body { font-family: 'Cairo', sans-serif; background-color: var(--bg); color: var(--text); transition: 0.3s; margin: 0; }
         
-        /* الهيدر الثابت المطور */
+        /* هيدر ثابت حديدي */
         .sticky-header {
             position: sticky;
             top: 0;
@@ -25,32 +25,20 @@
         }
         .dark .sticky-header { background-color: #020617; }
 
-        /* الكروت */
         .subject-card {
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             border-radius: 2rem;
             background: var(--card);
             border: 1px solid var(--border);
             overflow: hidden;
+            position: relative;
         }
         .subject-card:hover {
             transform: translateY(-10px);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
             border-color: #2563eb;
         }
 
-        /* العدادات */
-        .timer-card {
-            background: var(--card);
-            border-right: 6px solid #0f172a;
-            border-radius: 1.25rem;
-            min-width: 260px;
-            border-top: 1px solid var(--border);
-            border-bottom: 1px solid var(--border);
-            border-left: 1px solid var(--border);
-        }
-
-        /* التنبيهات */
         .toast {
             position: fixed;
             bottom: 20px;
@@ -60,182 +48,195 @@
             color: white;
             z-index: 9999;
             transform: translateY(200px);
-            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             font-weight: bold;
         }
         .toast.show { transform: translateY(0); }
 
-        /* أزرار الإجراءات */
-        .action-btn {
-            display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; border-radius: 1rem;
-            font-weight: 800; transition: 0.2s; width: 100%;
+        .timer-card {
+            background: var(--card);
+            border-right: 6px solid #0f172a;
+            border-radius: 1.25rem;
+            min-width: 260px;
+            border: 1px solid var(--border);
+            border-right-width: 6px;
         }
 
-        /* مربع اختيار الإنجاز */
         .done-check {
             width: 26px; height: 26px; border: 3px solid #cbd5e1; border-radius: 8px; cursor: pointer;
             display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: 0.2s;
         }
         .done-check.active { background-color: #10b981; border-color: #10b981; }
-        .done-check.active::after { content: "✓"; color: white; font-weight: 900; }
+        .done-check.active::after { content: "✓"; color: white; font-weight: 900; font-size: 14px; }
+
+        .action-btn {
+            display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; border-radius: 1rem;
+            font-weight: 800; transition: 0.2s; width: 100%;
+        }
+
+        /* شريط التحميل */
+        .progress-container { width: 100%; background: #e2e8f0; border-radius: 99px; height: 10px; display: none; margin-top: 10px; overflow: hidden; }
+        .progress-bar { height: 100%; background: #2563eb; width: 0%; transition: width 0.2s; }
 
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .animate-fadeIn { animation: fadeIn 0.5s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .q-block { background: var(--bg); border: 2px solid var(--border); border-radius: 2rem; padding: 1.5rem; margin-bottom: 1rem; position: relative; }
+        .correct-opt { border-color: #10b981 !important; background: #ecfdf5 !important; }
+        
+        .admin-step-card { background: var(--card); border: 2px solid var(--border); border-radius: 1.5rem; padding: 1.5rem; cursor: pointer; transition: 0.2s; text-align: center; }
+        .admin-step-card:hover { border-color: #2563eb; transform: scale(1.02); background: rgba(37, 99, 235, 0.05); }
+        .admin-step-card.active { background: #2563eb; color: white; border-color: #2563eb; }
     </style>
 </head>
-<body class="antialiased">
+<body class="antialiased font-bold">
 
     <div id="toast" class="toast"></div>
 
-    <!-- الهيدر الثابت -->
-    <nav class="sticky-header text-white pt-8 pb-4 px-6">
-        <div class="max-w-7xl mx-auto flex flex-col items-center gap-4">
+    <!-- Navigation -->
+    <nav class="sticky-header text-white pt-8 pb-4 px-6 font-bold shadow-2xl">
+        <div class="max-w-7xl mx-auto flex flex-col items-center gap-4 text-center font-bold">
             <div class="flex items-center justify-between w-full max-w-4xl font-bold">
                 <button onclick="toggleDarkMode()" class="p-3 bg-white/10 rounded-2xl hover:bg-white/20 transition text-xl">🌙</button>
-                <div onclick="handleSecretClick()" class="text-center group cursor-pointer">
+                <div class="text-center group">
                     <h1 class="text-3xl md:text-5xl font-black mb-1 transition group-hover:text-blue-400">جامعة دراية</h1>
-                    <div class="h-1 bg-blue-500 w-20 mx-auto rounded-full mb-1"></div>
-                    <p class="text-[10px] opacity-60 uppercase font-bold tracking-widest">Faculty of Pharmacy</p>
+                    <div class="h-1 bg-blue-500 w-20 mx-auto rounded-full mb-1 font-bold"></div>
+                    <p class="text-[10px] opacity-60 uppercase tracking-widest font-bold font-bold font-bold font-bold">Faculty of Pharmacy</p>
                 </div>
                 <div class="w-10"></div>
             </div>
-            
             <div class="w-full max-w-2xl flex flex-col items-center gap-4 relative">
-                <!-- شريط البحث -->
-                <div id="search-box-wrap" class="w-full relative">
-                    <input type="text" id="main-search" oninput="handleSearch(this.value)" autocomplete="off" placeholder="ابحث عن مادة..." class="w-full bg-white/10 border border-white/20 rounded-2xl py-4 px-6 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 text-center font-bold">
-                    <div id="search-suggestions" class="hidden absolute top-full left-0 right-0 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl mt-2 z-50 border border-slate-200 dark:border-slate-700 overflow-hidden font-bold"></div>
+                <div id="search-box-wrap" class="w-full relative font-bold">
+                    <input type="text" id="main-search" onkeydown="handleAdminKey(event)" oninput="handleSearch(this.value)" autocomplete="off" placeholder="ابحث عن مادة..." class="w-full bg-white/10 border border-white/20 rounded-2xl py-4 px-6 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 text-center font-bold">
+                    <div id="search-suggestions" class="hidden absolute top-full left-0 right-0 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl mt-2 z-50 border border-slate-200 dark:border-slate-700 overflow-hidden text-slate-800 font-bold font-bold"></div>
                 </div>
-
-                <!-- شريحة اختيار المادة (✕ تظهر هنا فقط) -->
-                <div id="selected-chip" class="hidden items-center bg-blue-600 px-6 py-2 rounded-full font-bold gap-3 animate-fadeIn">
+                <div id="selected-chip" class="hidden items-center bg-blue-600 px-6 py-2 rounded-full font-bold gap-3 animate-fadeIn font-bold font-bold">
                     <span id="chip-text"></span>
                     <div onclick="clearSearch()" class="cursor-pointer font-black text-lg hover:text-red-400">✕</div>
                 </div>
-
-                <button onclick="showPage('home')" class="font-bold hover:text-blue-400 transition text-lg font-bold">الرئيسية</button>
+                <button onclick="showPage('home')" class="font-bold hover:text-blue-400 transition text-lg font-bold font-bold font-bold font-bold">الرئيسية</button>
             </div>
         </div>
     </nav>
 
     <main class="max-w-7xl mx-auto px-6 pt-8 pb-12 font-bold">
-        
+        <!-- Home Section -->
         <div id="page-home" class="space-y-16">
-            <!-- التنبيهات -->
             <section id="news-section-main">
-                <div class="flex items-center justify-center gap-4 mb-8"><div class="h-1 bg-slate-200 flex-grow max-w-[200px]"></div><h2 class="text-2xl font-black">التنبيهات</h2><div class="h-1 bg-slate-200 flex-grow max-w-[200px]"></div></div>
+                <div class="flex items-center justify-center gap-4 mb-8 font-bold"><div class="h-1 bg-slate-200 flex-grow max-w-[200px]"></div><h2 class="text-2xl font-black">التنبيهات</h2><div class="h-1 bg-slate-200 flex-grow max-w-[200px]"></div></div>
                 <div id="news-container" class="grid gap-4 max-w-4xl mx-auto text-center font-bold font-bold"></div>
             </section>
-
-            <!-- العداد -->
             <section id="countdown-section-main">
-                <div class="flex items-center justify-center gap-4 mb-8"><div class="h-1 bg-slate-200 flex-grow max-w-[200px]"></div><h2 class="text-2xl font-black">Quiz Countdown</h2><div class="h-1 bg-slate-200 flex-grow max-w-[200px]"></div></div>
-                <div id="timers-container" class="flex gap-6 overflow-x-auto pb-8 scrollbar-hide px-4"></div>
+                <div class="flex items-center justify-center gap-4 mb-8 font-bold font-bold font-bold"><div class="h-1 bg-slate-200 flex-grow max-w-[200px]"></div><h2 class="text-2xl font-black">Quiz Countdown</h2><div class="h-1 bg-slate-200 flex-grow max-w-[200px]"></div></div>
+                <div id="timers-container" class="flex gap-6 overflow-x-auto pb-8 scrollbar-hide px-4 font-bold font-bold"></div>
             </section>
-
-            <!-- المقررات -->
             <section>
-                <div class="text-center mb-10"><h2 class="text-4xl font-black mb-4">المقررات الدراسية</h2><div class="h-1.5 w-20 bg-blue-600 mx-auto rounded-full font-bold font-bold font-bold"></div></div>
-                <div id="subjects-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10"></div>
+                <div class="text-center mb-10"><h2 class="text-4xl font-black text-slate-900 dark:text-white mb-4 font-bold font-bold font-bold font-bold">المقررات الدراسية</h2><div class="h-1.5 w-20 bg-blue-600 mx-auto rounded-full"></div></div>
+                <div id="subjects-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10 font-bold font-bold font-bold"></div>
             </section>
         </div>
 
-        <!-- اختيار نوع المحتوى -->
-        <div id="page-choice" class="hidden py-20 text-center space-y-12 font-bold">
-            <h2 id="choice-subj-title" class="text-4xl font-black"></h2>
-            <div class="grid md:grid-cols-2 gap-10 max-w-4xl mx-auto">
-                <div onclick="openSubList('Lecture')" class="subject-card p-12 cursor-pointer font-bold">
-                    <div class="text-7xl mb-6">📚</div><h3 class="text-3xl font-black">المحاضرات</h3>
-                    <p class="opacity-40 text-lg">Theoretical Lectures</p>
+        <!-- Choice Page -->
+        <div id="page-choice" class="hidden py-20 text-center space-y-12 animate-fadeIn font-bold">
+            <h2 id="choice-subj-title" class="text-4xl font-black font-bold font-bold"></h2>
+            <div class="grid md:grid-cols-2 gap-10 max-w-4xl mx-auto font-bold font-bold">
+                <div onclick="openSpecificList('Lecture')" class="subject-card p-12 cursor-pointer font-bold font-bold font-bold">
+                    <div class="text-7xl mb-6 font-bold font-bold font-bold font-bold">📚</div><h3 class="text-3xl font-black">المحاضرات</h3>
+                    <p class="opacity-40 text-lg font-bold font-bold">Theoretical Lectures</p>
                 </div>
-                <div onclick="openSubList('Section')" class="subject-card p-12 cursor-pointer font-bold">
-                    <div class="text-7xl mb-6">🧪</div><h3 class="text-3xl font-black">السكاشن</h3>
-                    <p class="opacity-40 text-lg font-bold">Practical Sections</p>
+                <div onclick="openSpecificList('Section')" class="subject-card p-12 cursor-pointer font-bold font-bold font-bold">
+                    <div class="text-7xl mb-6 font-bold font-bold font-bold font-bold">🧪</div><h3 class="text-3xl font-black">السكاشن</h3>
+                    <p class="opacity-40 text-lg font-bold font-bold">Practical Sections</p>
                 </div>
             </div>
-            <button onclick="showPage('home')" class="text-slate-400 underline text-lg font-bold">رجوع</button>
+            <button onclick="showPage('home')" class="text-slate-400 underline text-lg font-bold font-bold">رجوع</button>
         </div>
 
-        <!-- قائمة المحتوى -->
-        <div id="page-list" class="hidden space-y-8 font-bold">
-            <div class="bg-[var(--card)] p-12 rounded-[3.5rem] text-center border border-[var(--border)] shadow-sm">
-                <h2 id="list-title" class="text-4xl font-black mb-6"></h2>
-                <button onclick="showPage('home')" class="bg-blue-600 text-white px-10 py-3 rounded-full font-bold">الرئيسية</button>
+        <!-- Details & List Pages (Existing Logic) -->
+        <div id="page-list" class="hidden space-y-8 animate-fadeIn font-bold font-bold font-bold font-bold">
+            <div class="bg-[var(--card)] p-12 rounded-[3.5rem] text-center border border-[var(--border)] shadow-sm font-bold font-bold font-bold">
+                <h2 id="list-title" class="text-4xl font-black mb-6 font-bold"></h2>
+                <button onclick="showPage('home')" class="bg-blue-600 text-white px-10 py-3 rounded-full font-bold">رجوع</button>
             </div>
-            <div id="items-list" class="grid gap-4 max-w-4xl mx-auto font-bold font-bold"></div>
+            <div id="items-list" class="grid gap-4 max-w-4xl mx-auto font-bold font-bold font-bold font-bold font-bold"></div>
         </div>
 
-        <!-- صفحة التفاصيل (التحميل والفتح) -->
-        <div id="page-details" class="hidden p-10 bg-[var(--card)] rounded-[4rem] shadow-2xl border border-[var(--border)] relative text-center space-y-10 font-bold">
-            <div class="absolute top-0 left-0 w-full h-3 bg-blue-600"></div>
-            <button onclick="showPage('list')" class="text-blue-600 font-bold underline">← العودة للقائمة</button>
+        <div id="page-details" class="hidden p-10 bg-[var(--card)] rounded-[4rem] shadow-2xl border border-[var(--border)] relative text-center space-y-10 animate-fadeIn font-bold font-bold">
+            <div class="absolute top-0 left-0 w-full h-3 bg-blue-600 font-bold font-bold font-bold"></div>
+            <button onclick="backFromDetails()" class="text-blue-600 font-bold hover:underline mb-10 inline-block text-lg font-bold font-bold font-bold">← العودة</button>
             <h3 id="det-name" class="text-3xl font-black uppercase tracking-tighter"></h3>
-            <div id="content-grid" class="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-6xl mx-auto font-bold">
-                <div class="p-10 bg-slate-50 dark:bg-slate-800/40 rounded-[3rem] space-y-6">
-                    <div class="text-6xl">📄</div><h4 class="text-xl font-black">PDF File</h4>
-                    <a id="btn-pdf-view" target="_blank" class="action-btn bg-blue-600 text-white opacity-20 pointer-events-none">فتح</a>
-                    <a id="btn-pdf-dl" download class="action-btn bg-slate-200 dark:bg-slate-700 opacity-20 pointer-events-none">تحميل</a>
+            <div id="content-grid" class="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-6xl mx-auto">
+                <div class="p-10 bg-slate-50 dark:bg-slate-800/40 rounded-[3rem] space-y-6 font-bold font-bold font-bold font-bold font-bold font-bold">
+                    <div class="text-6xl font-bold">📄</div><h4 class="text-xl font-black">PDF File</h4>
+                    <a id="btn-pdf-view" target="_blank" class="action-btn bg-blue-600 text-white opacity-20 pointer-events-none font-bold">فتح</a>
+                    <a id="btn-pdf-dl" download class="action-btn bg-slate-200 dark:bg-slate-700 opacity-20 pointer-events-none font-bold">تحميل</a>
                 </div>
-                <div id="audio-box" class="p-10 bg-slate-50 dark:bg-slate-800/40 rounded-[3rem] space-y-6">
-                    <div class="text-6xl">🎙️</div><h4 class="text-xl font-black">Recording</h4>
+                <div id="audio-box" class="p-10 bg-slate-50 dark:bg-slate-800/40 rounded-[3rem] space-y-6 font-bold font-bold font-bold font-bold font-bold font-bold font-bold font-bold">
+                    <div class="text-6xl font-bold font-bold">🎙️</div><h4 class="text-xl font-black font-bold font-bold">Recording</h4>
                     <audio id="player" controls class="w-full hidden font-bold"></audio>
-                    <p id="player-empty" class="text-slate-400 font-bold font-bold font-bold">غير متوفر</p>
-                    <a id="btn-audio-dl" download class="action-btn bg-slate-200 dark:bg-slate-700 hidden">تحميل الريكورد</a>
+                    <p id="player-empty" class="text-slate-400 font-bold font-bold font-bold font-bold font-bold font-bold">غير متوفر</p>
+                    <a id="btn-audio-dl" download class="action-btn bg-emerald-600 text-white hidden font-bold font-bold font-bold">تحميل الريكورد</a>
                 </div>
-                <div id="quiz-box" class="p-10 bg-slate-50 dark:bg-slate-800/40 rounded-[3rem] space-y-6 font-bold font-bold">
-                    <div class="text-6xl">📝</div><h4 class="text-xl font-black font-bold font-bold">Quiz</h4>
-                    <button class="action-btn bg-amber-500 text-white opacity-20 pointer-events-none font-bold">ابدأ الكويز</button>
+                <div id="quiz-box" class="p-10 bg-slate-50 dark:bg-slate-800/40 rounded-[3rem] space-y-6 font-bold font-bold font-bold font-bold font-bold font-bold">
+                    <div class="text-6xl font-bold">📝</div><h4 class="text-xl font-black font-bold font-bold">Quiz</h4>
+                    <button id="btn-start-quiz" onclick="runQuiz()" class="action-btn bg-amber-500 text-white opacity-20 pointer-events-none font-bold">ابدأ الاختبار</button>
                 </div>
             </div>
         </div>
 
-        <!-- لوحة التحكم (الدكتور) -->
-        <div id="page-admin" class="hidden space-y-12 py-20 border-t-4 border-dashed border-blue-200 font-bold">
-            <div class="flex items-center justify-between font-bold"><h2 class="text-4xl font-black text-blue-900 font-bold font-bold">لوحة الإدارة الشاملة</h2><button onclick="location.reload()" class="bg-red-500 text-white px-8 py-2 rounded-xl font-bold font-bold font-bold">خروج</button></div>
-            <div class="grid lg:grid-cols-2 gap-10 font-bold text-right font-bold">
-                
-                <div class="bg-[var(--card)] p-10 rounded-[3rem] shadow-xl space-y-6">
-                    <h3 class="text-2xl font-black border-b pb-4 text-emerald-800 uppercase text-center font-bold">⏳ إدارة العدادات</h3>
-                    <div id="admin-timers-list" class="space-y-4 max-h-[400px] overflow-y-auto pr-2 font-bold font-bold font-bold"></div>
-                    <button onclick="saveAdminData()" class="w-full bg-emerald-600 text-white py-5 rounded-2xl font-bold shadow-lg text-xl hover:bg-emerald-700 transition font-bold font-bold font-bold">حفظ تعديلات العدادات</button>
-                </div>
-
-                <div class="bg-[var(--card)] p-10 rounded-[3rem] shadow-xl space-y-6 font-bold font-bold">
-                    <h3 class="text-2xl font-black border-b pb-4 text-orange-800 uppercase text-center font-bold">🚀 رفع محتوى جديد</h3>
-                    <select id="adm-sub" class="w-full p-4 border rounded-2xl bg-[var(--bg)] font-bold"></select>
-                    <div class="grid grid-cols-2 gap-4">
-                        <select id="adm-type" class="p-4 border rounded-2xl bg-[var(--bg)] font-bold"><option value="Lecture">محاضرة</option><option value="Section">سكشن</option></select>
-                        <input type="number" id="adm-num" placeholder="رقم (1-12)" class="p-4 border rounded-2xl bg-[var(--bg)] font-bold">
+        <!-- Admin Control Panel -->
+        <div id="page-admin" class="hidden space-y-12 py-20 border-t-4 border-dashed border-blue-200 animate-fadeIn font-bold">
+            <div class="flex items-center justify-between font-bold font-bold font-bold font-bold font-bold"><h2 class="text-4xl font-black text-blue-900 font-bold">لوحة الإدارة الكاملة</h2><button onclick="adminLogout()" class="bg-red-500 text-white px-8 py-3 rounded-xl font-bold shadow-lg hover:bg-red-600 transition font-bold font-bold font-bold">خروج آمن</button></div>
+            
+            <div class="grid lg:grid-cols-2 gap-10 font-bold text-right font-bold font-bold font-bold">
+                <div class="space-y-10">
+                    <div class="bg-[var(--card)] p-10 rounded-[3rem] shadow-xl space-y-6 font-bold font-bold font-bold font-bold font-bold font-bold">
+                        <h3 class="text-2xl font-black border-b pb-4 text-emerald-800 uppercase text-center font-bold font-bold font-bold font-bold">⏳ إدارة العدادات</h3>
+                        <div id="admin-timers-list" class="space-y-4 max-h-[400px] overflow-y-auto pr-2 font-bold font-bold font-bold font-bold font-bold font-bold font-bold"></div>
+                        <button onclick="finalSaveState()" class="w-full bg-emerald-600 text-white py-5 rounded-2xl font-bold shadow-lg font-bold font-bold font-bold">حفظ التعديلات</button>
                     </div>
-                    <input type="file" id="up-pdf" class="text-xs border p-4 w-full rounded-xl font-bold">
-                    <input type="file" id="up-audio" class="text-xs border p-4 w-full rounded-xl font-bold">
-                    <button onclick="handleFileUpload()" id="up-btn" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold text-xl hover:bg-blue-700 transition">بدء الرفع</button>
                 </div>
 
-                <div class="bg-[var(--card)] p-10 rounded-[3rem] shadow-xl space-y-6 lg:col-span-2 font-bold font-bold font-bold">
-                    <h3 class="text-2xl font-black border-b pb-4 text-slate-800 dark:text-white uppercase text-center font-bold font-bold">📢 إدارة الأخبار</h3>
-                    <div class="grid md:grid-cols-2 gap-10 font-bold font-bold">
-                        <div>
-                            <textarea id="adm-news-inp" placeholder="اكتب الخبر الجديد هنا..." class="w-full p-4 border rounded-2xl h-40 bg-[var(--bg)] font-bold font-bold font-bold font-bold"></textarea>
-                            <button onclick="addAdminNews()" class="w-full bg-slate-800 text-white py-5 rounded-2xl font-bold mt-4 font-bold font-bold font-bold">نشر الخبر الآن</button>
+                <div class="bg-[var(--card)] p-10 rounded-[4rem] shadow-2xl space-y-10 border-4 border-blue-100 font-bold">
+                    <h3 class="text-3xl font-black text-blue-600 text-center uppercase tracking-tight font-bold font-bold font-bold font-bold font-bold">🚀 نظام إدارة المحتوى</h3>
+                    <div id="adm-step-1" class="space-y-4 font-bold font-bold"><h4 class="font-black text-slate-400 text-sm font-bold font-bold">الخطوة 1: اختر المادة</h4><div id="admin-subject-selector" class="grid grid-cols-2 gap-4 font-bold font-bold font-bold font-bold font-bold"></div></div>
+                    <div id="adm-step-2" class="hidden space-y-4 animate-fadeIn font-bold font-bold font-bold font-bold font-bold"><h4 class="font-black text-slate-400 text-sm font-bold font-bold">الخطوة 2: اختر النوع</h4><div class="flex gap-4 font-bold font-bold font-bold"><div id="adm-btn-lecture" onclick="selectAdminType('Lecture')" class="admin-step-card flex-grow font-bold font-bold font-bold font-bold">📚 محاضرة</div><div id="adm-btn-section" onclick="selectAdminType('Section')" class="admin-step-card flex-grow hidden font-bold font-bold">🧪 سكشن</div></div></div>
+                    <div id="adm-step-3" class="hidden space-y-4 animate-fadeIn font-bold font-bold"><h4 class="font-black text-slate-400 text-sm font-bold font-bold font-bold">الخطوة 3: اختر الرقم</h4><div class="grid grid-cols-6 gap-2 font-bold font-bold" id="admin-num-grid"></div></div>
+                    <div id="adm-step-4" class="hidden space-y-8 animate-fadeIn border-t pt-8 font-bold font-bold font-bold">
+                        <h4 class="font-black text-blue-600 text-center text-xl mb-6" id="adm-editor-title"></h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 font-bold">
+                             <div class="p-6 bg-blue-50 dark:bg-blue-900/30 rounded-3xl border-2 border-blue-200">
+                                 <h5 class="font-black text-blue-700 mb-3 flex items-center gap-2 font-bold font-bold font-bold">📄 ملف المحاضرة (PDF)</h5>
+                                 <input type="file" id="up-pdf" class="text-xs w-full font-bold">
+                             </div>
+                             <div class="p-6 bg-emerald-50 dark:bg-emerald-900/30 rounded-3xl border-2 border-emerald-200 font-bold font-bold font-bold">
+                                 <h5 class="font-black text-emerald-700 mb-3 flex items-center gap-2 font-bold font-bold">🎙️ تسجيل الريكورد (Audio)</h5>
+                                 <input type="file" id="up-audio" class="text-xs w-full font-bold">
+                             </div>
                         </div>
-                        <div id="admin-news-list" class="space-y-3 max-h-60 overflow-y-auto pr-2 font-bold font-bold font-bold font-bold"></div>
+                        
+                        <!-- عداد التحميل -->
+                        <div id="upload-progress-container" class="progress-container"><div id="upload-progress-bar" class="progress-bar"></div></div>
+                        <p id="upload-status-text" class="text-center text-sm font-bold text-blue-600 hidden">جاري الرفع...</p>
+
+                        <button onclick="handleFileUpload()" id="up-btn" class="w-full bg-blue-600 text-white py-6 rounded-[2rem] font-black text-2xl shadow-2xl hover:bg-blue-700 transition">حفظ ورفع المحتوى</button>
                     </div>
                 </div>
-
             </div>
         </div>
     </main>
 
     <script>
-        // --- الرابط المدمج بنجاح ---
         const WORKER_URL = "https://r2-uploader.ahmadatefeasa2006.workers.dev"; 
-        
-        let siteState = {
+        const branchedSubjs = ["Micro biology", "Bio chemistry 2", "Pathology"];
+
+        // التأسيس العالمي
+        let adminSelection = { sub: null, type: null, num: null };
+        let state = {
             subjects: [
                 { name: "Pathology", days: 2, img: "https://images.unsplash.com/photo-1581594693702-fbdc51b2763b?w=400" },
-                { name: "Pharma 2", days: 5, img: "https://images.unsplash.com/photo-1576086213369-97a306d36557?w=400" },
+                { name: "Pharma 2", days: 5, img: "https://images.unsplash.com/photo-1576086213369-97a306d36557?w=800&q=80" },
                 { name: "Micro biology", days: 7, img: "https://images.unsplash.com/photo-1581093588401-fbb62a02f120?w=400" },
                 { name: "Bio chemistry 2", days: 10, img: "https://images.unsplash.com/photo-1530026405186-ed1f139313f8?w=400" },
                 { name: "Physiology 2", days: 14, img: "https://images.unsplash.com/photo-1559757175-5700dde675bc?w=400" },
@@ -244,157 +245,135 @@
                 { name: "Scientific thinking", days: 28, img: "https://images.unsplash.com/photo-1493612276216-ee3925520721?w=400" },
                 { name: "Communication skills", days: 35, img: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400" }
             ],
-            news: ["مرحباً بكم في منصة صيدلة دراية - كل ما تحتاجه في مكان واحد."]
+            news: ["أهلاً بكم في صيدلة دراية - تم تحديث نظام الرفع."]
         };
 
-        // نظام المزامنة مع Cloudflare
-        async function syncWithCloud() {
+        // --- Core Functions ---
+        async function syncData() {
             try {
                 const res = await fetch(`${WORKER_URL}?data=site_state`);
                 const data = await res.json();
-                if(data.subjects) siteState = data;
+                if(data && data.subjects) state = data;
                 renderApp();
             } catch(e) { renderApp(); }
         }
 
-        async function saveAdminData() {
-            siteState.subjects.forEach((s, i) => {
-                s.name = document.getElementById(`adm-n-${i}`).value;
-                s.days = Math.max(0, parseInt(document.getElementById(`adm-d-${i}`).value) || 0);
-            });
-            showToast("جاري المزامنة مع كلاود فلير...");
-            await fetch(`${WORKER_URL}?data=site_state`, { method: 'POST', body: JSON.stringify(siteState) });
-            showToast("تم تحديث البيانات للطلاب بنجاح!");
-            renderApp();
-        }
+        function renderAdminFlow() {
+            const selector = document.getElementById('admin-subject-selector');
+            if(selector) selector.innerHTML = state.subjects.map(s => `<div onclick="selectAdminSub('${s.name}')" class="admin-step-card ${adminSelection.sub === s.name ? 'active' : ''}">${s.name}</div>`).join('');
 
-        async function addAdminNews() {
-            const txt = document.getElementById('adm-news-inp').value;
-            if(!txt) return;
-            siteState.news.push(txt);
-            await fetch(`${WORKER_URL}?data=site_state`, { method: 'POST', body: JSON.stringify(siteState) });
-            document.getElementById('adm-news-inp').value = "";
-            renderApp(); showToast("تم النشر");
-        }
-
-        async function deleteAdminNews(idx) {
-            siteState.news.splice(idx, 1);
-            await fetch(`${WORKER_URL}?data=site_state`, { method: 'POST', body: JSON.stringify(siteState) });
-            renderApp();
-        }
-
-        // --- الرندر والعرض ---
-        function renderApp() {
-            renderGrid(); renderTimers(); renderNews(); renderAdminLists();
-        }
-
-        function renderGrid() {
-            document.getElementById('subjects-grid').innerHTML = siteState.subjects.map(s => `
-                <div onclick="handleSubClick('${s.name}')" class="subject-card shadow-lg animate-fadeIn cursor-pointer font-bold">
-                    <div class="h-48 bg-slate-100"><img src="${s.img}" class="w-full h-full object-cover"></div>
-                    <div class="p-6 text-center font-black text-xl">${s.name}</div>
-                </div>`).join('');
-            document.getElementById('adm-sub').innerHTML = siteState.subjects.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
-        }
-
-        function renderTimers() {
-            const sorted = [...siteState.subjects].sort((a,b) => a.days - b.days);
-            document.getElementById('timers-container').innerHTML = sorted.map(s => {
-                let color = 'text-emerald-600'; if(s.days <= 3) color = 'text-red-600'; else if(s.days <= 7) color = 'text-amber-500';
-                return `<div class="timer-card p-6 shadow-sm flex items-center justify-between font-bold"><div class="text-lg font-bold">${s.name}</div><div class="text-center font-black"><span class="text-4xl ${color}">${s.days<10?'0'+s.days:s.days}</span></div></div>`;
-            }).join('');
-        }
-
-        function renderNews() {
-            document.getElementById('news-container').innerHTML = siteState.news.map(n => `<div class="p-6 bg-[var(--card)] border-r-[10px] border-blue-600 shadow-sm rounded-2xl border border-[var(--border)] font-bold"><p class="text-lg font-bold">${n}</p></div>`).reverse().join('');
-        }
-
-        function renderAdminLists() {
-            document.getElementById('admin-timers-list').innerHTML = siteState.subjects.map((s, i) => `
-                <div class="flex items-center justify-between p-4 bg-[var(--bg)] border rounded-2xl mb-2 font-bold">
-                    <input type="text" id="adm-n-${i}" value="${s.name}" class="bg-transparent border-b font-bold outline-none w-1/2">
-                    <input type="number" id="adm-d-${i}" value="${s.days}" min="0" class="w-20 bg-white dark:bg-slate-700 rounded px-2 text-center text-blue-600 font-black">
-                </div>`).join('');
-            document.getElementById('admin-news-list').innerHTML = siteState.news.map((n, i) => `
-                <div class="flex justify-between p-4 bg-[var(--bg)] border rounded-2xl mb-2 font-bold"><span class="truncate max-w-[75%] font-bold">${n}</span><button onclick="deleteAdminNews(${i})" class="text-red-500 font-bold underline">حذف</button></div>`).join('');
-        }
-
-        // --- التنقل ---
-        window.currentSub = ""; window.currentType = "Lecture";
-        const branched = ["Micro biology", "Bio chemistry 2", "Pathology"];
-
-        function handleSubClick(n) {
-            window.currentSub = n;
-            if(branched.includes(n)) { document.getElementById('choice-subj-title').innerText = n; showPage('choice'); }
-            else openSubList('Lecture');
-        }
-
-        function openSubList(type) {
-            window.currentType = type;
-            document.getElementById('list-title').innerText = window.currentSub + (type==='Lecture'?" - المحاضرات":" - السكاشن");
-            showPage('list');
-            let h = '';
-            for(let i=1; i<=12; i++) {
-                const k = `done_${window.currentSub}_${type}_${i}`; const act = localStorage.getItem(k)==='true'?'active':'';
-                h += `<div onclick="openFinalDetails(${i})" class="bg-[var(--card)] p-6 rounded-2xl border-2 border-[var(--border)] flex justify-between items-center hover:border-blue-600 cursor-pointer shadow-sm group">
-                    <div class="flex items-center gap-4 font-bold"><div class="done-check ${act}" onclick="toggleDone(event, '${k}')"></div><span class="text-slate-400 text-3xl font-black">${i<10?'0'+i:i}</span><h4 class="text-xl font-bold font-bold font-bold">${type} ${i}</h4></div><span class="text-blue-600 font-bold">←</span></div>`;
+            const numGrid = document.getElementById('admin-num-grid');
+            if(numGrid) {
+                numGrid.innerHTML = '';
+                for(let i=1; i<=12; i++) {
+                    const btn = document.createElement('div');
+                    btn.className = `admin-step-card p-2 text-xs ${adminSelection.num === i ? 'active' : ''}`;
+                    btn.innerText = i;
+                    btn.onclick = () => selectAdminNum(i);
+                    numGrid.appendChild(btn);
+                }
             }
-            document.getElementById('items-list').innerHTML = h;
         }
 
-        async function openFinalDetails(num) {
-            showPage('details');
-            document.getElementById('det-name').innerText = `${window.currentSub} - ${window.currentType} ${num}`;
-            const pv = document.getElementById('btn-pdf-view'), pd = document.getElementById('btn-pdf-dl'), pl = document.getElementById('player'), ad = document.getElementById('btn-audio-dl'), pe = document.getElementById('player-empty');
-            [pv, pd].forEach(e => e.classList.add('opacity-20', 'pointer-events-none'));
-            pl.classList.add('hidden'); ad.classList.add('hidden'); pe.classList.remove('hidden');
+        function renderApp() {
+            const grid = document.getElementById('subjects-grid');
+            if(grid) grid.innerHTML = state.subjects.map(s => `<div onclick="handleSubClick('${s.name}')" class="subject-card shadow-lg animate-fadeIn cursor-pointer font-bold"><div class="h-48 overflow-hidden font-bold"><img src="${s.img}" class="w-full h-full object-cover"></div><div class="p-6 text-center font-black text-xl">${s.name}</div></div>`).join('');
+            
+            const timers = document.getElementById('timers-container');
+            if(timers) {
+                const sorted = [...state.subjects].sort((a,b) => a.days - b.days);
+                timers.innerHTML = sorted.map(s => {
+                    let color = 'text-emerald-600'; if(s.days <= 3) color = 'text-red-600'; else if(s.days <= 7) color = 'text-amber-500';
+                    return `<div class="timer-card p-6 shadow-sm flex items-center justify-between font-bold"><div class="text-lg font-bold">${s.name}</div><div class="text-center font-black"><span class="text-4xl ${color}">${s.days<10?'0'+s.days:s.days}</span></div></div>`;
+                }).join('');
+            }
 
-            if(window.currentType === 'Section') document.getElementById('audio-box').classList.add('hidden');
-            else document.getElementById('audio-box').classList.remove('hidden');
+            const newsCont = document.getElementById('news-container');
+            if(newsCont) newsCont.innerHTML = state.news.map(n => `<div class="p-6 bg-[var(--card)] border-r-[10px] border-blue-600 shadow-sm rounded-2xl border border-[var(--border)] font-bold"><p class="text-lg font-bold">${n}</p></div>`).reverse().join('');
 
-            try {
-                const id = `${window.currentSub}-${window.currentType}-${num}`.replace(/\s+/g, '-');
-                const res = await fetch(`${WORKER_URL}?data=content_${id}`);
-                const d = await res.json();
-                if(d.pdf) { pv.href = d.pdf; pd.href = d.pdf; [pv, pd].forEach(e => e.classList.remove('opacity-20', 'pointer-events-none')); }
-                if(d.audio && window.currentType === 'Lecture') { pl.src = d.audio; ad.href = d.audio; pl.classList.remove('hidden'); ad.classList.remove('hidden'); pe.classList.add('hidden'); }
-            } catch(e) {}
+            const timersAdmin = document.getElementById('admin-timers-list');
+            if(timersAdmin) timersAdmin.innerHTML = state.subjects.map((s, i) => `<div class="flex items-center justify-between p-4 bg-[var(--bg)] border rounded-2xl mb-2 font-bold"><input type="text" id="adm-n-${i}" value="${s.name}" class="bg-transparent border-b font-bold outline-none w-1/2"><input type="number" id="adm-d-${i}" value="${s.days}" min="0" class="w-20 bg-white dark:bg-slate-700 rounded px-2 text-center text-blue-600 font-black"></div>`).join('');
+
+            renderAdminFlow();
+        }
+
+        // --- Upload Logic with Progress ---
+        async function uploadFileWithProgress(file, name) {
+            return new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open("PUT", `${WORKER_URL}?file=${name}`);
+                xhr.upload.onprogress = (e) => {
+                    if (e.lengthComputable) {
+                        const percent = Math.round((e.loaded / e.total) * 100);
+                        updateProgressBar(percent);
+                    }
+                };
+                xhr.onload = () => xhr.status === 200 ? resolve() : reject();
+                xhr.onerror = () => reject();
+                xhr.send(file);
+            });
+        }
+
+        function updateProgressBar(p) {
+            document.getElementById('upload-progress-container').style.display = 'block';
+            document.getElementById('upload-status-text').style.display = 'block';
+            document.getElementById('upload-progress-bar').style.width = p + "%";
+            document.getElementById('upload-status-text').innerText = `جاري الرفع... ${p}%`;
         }
 
         async function handleFileUpload() {
-            const s = document.getElementById('adm-sub').value, n = document.getElementById('adm-num').value, t = document.getElementById('adm-type').value;
-            const pdf = document.getElementById('up-pdf').files[0], audio = document.getElementById('up-audio').files[0];
-            if(!s || !n) return showToast("أكمل البيانات", "error");
-            const btn = document.getElementById('up-btn'); btn.disabled = true; btn.innerText = "جاري الرفع الآن...";
+            const { sub: s, type: t, num: n } = adminSelection;
+            const pdfFile = document.getElementById('up-pdf').files[0];
+            const audioFile = document.getElementById('up-audio').files[0];
+            if(!s || !n) return showToast("أكمل الخطوات أولاً", "error");
+            
+            const btn = document.getElementById('up-btn'); btn.disabled = true;
             try {
                 let pUrl = null, aUrl = null;
-                if(pdf) { const fn = `pdf_${Date.now()}_${pdf.name}`; await fetch(`${WORKER_URL}?file=${fn}`, { method: 'PUT', body: pdf }); pUrl = `${WORKER_URL}?file=${fn}`; }
-                if(audio && t === 'Lecture') { const fn = `audio_${Date.now()}_${audio.name}`; await fetch(`${WORKER_URL}?file=${fn}`, { method: 'PUT', body: audio }); aUrl = `${WORKER_URL}?file=${fn}`; }
+                if(pdfFile) {
+                    const fn = `f_${t}_${Date.now()}_${pdfFile.name}`;
+                    await uploadFileWithProgress(pdfFile, fn);
+                    pUrl = `${WORKER_URL}?file=${fn}`;
+                }
+                if(audioFile && t === 'Lecture') {
+                    const fn = `a_${Date.now()}_${audioFile.name}`;
+                    await uploadFileWithProgress(audioFile, fn);
+                    aUrl = `${WORKER_URL}?file=${fn}`;
+                }
                 const id = `${s}-${t}-${n}`.replace(/\s+/g, '-');
                 await fetch(`${WORKER_URL}?data=content_${id}`, { method: 'POST', body: JSON.stringify({ pdf: pUrl, audio: aUrl }) });
-                showToast("تم الحفظ بنجاح!"); setTimeout(() => location.reload(), 1000);
-            } catch(e) { showToast("خطأ في الرفع"); btn.disabled = false; }
+                showToast("تم الرفع والحفظ بنجاح!");
+                setTimeout(() => location.reload(), 1000);
+            } catch(e) { showToast("فشل التحميل"); btn.disabled = false; }
         }
 
-        // دوال مساعدة
+        // --- Step-by-Step Helpers ---
+        function selectAdminSub(name) { adminSelection.sub = name; adminSelection.type = null; adminSelection.num = null; document.getElementById('adm-step-2').classList.remove('hidden'); document.getElementById('adm-btn-section').classList.toggle('hidden', !branchedSubjs.includes(name)); renderAdminFlow(); }
+        function selectAdminType(type) { adminSelection.type = type; adminSelection.num = null; document.getElementById('adm-step-3').classList.remove('hidden'); renderAdminFlow(); }
+        function selectAdminNum(num) { adminSelection.num = num; document.getElementById('adm-step-4').classList.remove('hidden'); document.getElementById('adm-editor-title').innerText = `تعديل ${adminSelection.sub} - ${adminSelection.type} ${num}`; renderAdminFlow(); }
+
+        // --- Main Logic & Nav ---
         function toggleDarkMode() { document.body.classList.toggle('dark'); localStorage.setItem('theme', document.body.classList.contains('dark')?'dark':'light'); }
-        function handleSearch(v) {
-            const q = v.trim().toLowerCase();
-            if(q === 'ahmed2006') return showPage('admin');
-            const sug = document.getElementById('search-suggestions');
-            if(!q) return sug.classList.add('hidden');
-            const m = siteState.subjects.filter(s => s.name.toLowerCase().includes(q));
-            if(m.length) { sug.classList.remove('hidden'); sug.innerHTML = m.map(s => `<div onclick="selectFromSearch('${s.name}')" class="p-4 hover:bg-blue-50 dark:hover:bg-slate-700 cursor-pointer font-bold font-bold font-bold font-bold">${s.name}</div>`).join(''); }
-            else sug.classList.add('hidden');
-        }
-        function selectFromSearch(n) { document.getElementById('search-box-wrap').classList.add('hidden'); const chip = document.getElementById('selected-chip'); chip.classList.replace('hidden', 'flex'); document.getElementById('chip-text').innerText = n; handleSubClick(n); }
-        function clearSearch() { document.getElementById('search-box-wrap').classList.remove('hidden'); document.getElementById('selected-chip').classList.replace('flex', 'hidden'); document.getElementById('main-search').value = ""; showPage('home'); }
-        function toggleDone(e, k) { e.stopPropagation(); const d = localStorage.getItem(k)==='true'; localStorage.setItem(k, !d); e.target.classList.toggle('active'); showToast(!d?"عاش يا بطل!":"تم الحذف"); }
-        function showPage(id) { document.querySelectorAll('main > div').forEach(e => e.classList.add('hidden')); document.getElementById('page-'+id).classList.remove('hidden'); if(id==='home') { document.getElementById('news-section-main').parentElement.classList.remove('hidden'); } window.scrollTo(0,0); }
+        function handleAdminKey(e) { if(e.key === 'Enter' && e.target.value.trim().toLowerCase() === 'ahmed2006') { showPage('admin'); e.target.value = ""; } }
+        function adminLogout() { adminSelection = { sub: null, type: null, num: null }; showPage('home'); document.getElementById('main-search').value = ""; }
+        function showPage(id) { document.querySelectorAll('main > div').forEach(e => e.classList.add('hidden')); const t = document.getElementById('page-'+id); if(t) t.classList.remove('hidden'); window.scrollTo(0,0); }
         function showToast(m, t='success') { const toast = document.getElementById('toast'); toast.innerText = m; toast.style.backgroundColor = t==='success'?'#10b981':'#ef4444'; toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 3000); }
-        function handleSecretClick() { if(!window.cc) window.cc=0; window.cc++; if(window.cc===3) { const p = prompt("Enter Password (2006):"); if(p==="2006") showPage('admin'); window.cc=0; } setTimeout(()=>window.cc=0, 2000); }
+        function handleSubClick(n) { window.currentSub = n; if(branchedSubjs.includes(n)) showPage('choice'); else openSubList('Lecture'); }
+        function openSubList(type) { window.currentType = type; document.getElementById('list-title').innerText = window.currentSub + (type==='Lecture'?" - المحاضرات":" - السكاشن"); showPage('list'); let h = ''; for(let i=1; i<=12; i++) { const k = `done_${window.currentSub}_${type}_${i}`; const act = localStorage.getItem(k)==='true'?'active':''; h += `<div onclick="openFinalDetails(${i})" class="bg-[var(--card)] p-6 rounded-2xl border-2 border-[var(--border)] flex justify-between items-center hover:border-blue-600 cursor-pointer shadow-sm group"><div class="flex items-center gap-4 font-bold"><div class="done-check ${act}" onclick="toggleDone(event, '${k}')"></div><span class="text-slate-400 text-3xl font-black">${i<10?'0'+i:i}</span><h4 class="text-xl font-bold font-bold font-bold font-bold font-bold font-bold font-bold font-bold font-bold">${type} ${i}</h4></div><span class="text-blue-600 font-bold font-bold font-bold font-bold font-bold font-bold font-bold font-bold font-bold font-bold font-bold font-bold font-bold font-bold font-bold font-bold font-bold">←</span></div>`; } document.getElementById('items-list').innerHTML = h; }
+        async function openFinalDetails(num) { 
+            showPage('details'); document.getElementById('det-name').innerText = `${window.currentSub} - ${window.currentType} ${num}`; 
+            const pv = document.getElementById('btn-pdf-view'), pd = document.getElementById('btn-pdf-dl'), ap = document.getElementById('player'), ad = document.getElementById('btn-audio-dl'), pe = document.getElementById('player-empty'), qb = document.getElementById('btn-start-quiz'); 
+            [pv, pd, qb].forEach(e => e.classList.add('opacity-20', 'pointer-events-none')); ap.classList.add('hidden'); ad.classList.add('hidden'); pe.classList.remove('hidden'); 
+            if(window.currentType === 'Section') document.getElementById('audio-box').classList.add('hidden'); else document.getElementById('audio-box').classList.remove('hidden'); 
+            try { 
+                const res = await fetch(`${WORKER_URL}?data=content_${`${window.currentSub}-${window.currentType}-${num}`.replace(/\s+/g, '-')}`); 
+                const d = await res.json(); 
+                if(d.pdf) { pv.href = d.pdf; pd.href = d.pdf; [pv, pd].forEach(e => e.classList.remove('opacity-20', 'pointer-events-none')); } 
+                if(d.audio && window.currentType === 'Lecture') { ap.src = d.audio; ad.href = d.audio; ap.classList.remove('hidden'); ad.classList.remove('hidden'); pe.classList.add('hidden'); } 
+            } catch(e) {} 
+        }
 
-        window.onload = syncWithCloud;
+        window.onload = () => { if (localStorage.getItem('theme') === 'dark') toggleDarkMode(); syncData(); };
     </script>
 </body>
 </html>
