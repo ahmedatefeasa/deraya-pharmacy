@@ -12,6 +12,444 @@
         :root { --bg: #f8fafc; --text: #0f172a; --card: #ffffff; --border: #e2e8f0; }
         .dark { --bg: #0f172a; --text: #f8fafc; --card: #1e293b; --border: #334155; }
         body { font-family: 'Cairo', sans-serif; background-color: var(--bg); color: var(--text); transition: 0.3s; margin: 0; }
+        
+        /* الهيدر الذكي التفاعلي */
+        .sticky-header { 
+            position: sticky; 
+            top: 0; 
+            z-index: 1000; 
+            background-color: #0f172a; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3); 
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .header-hidden { transform: translateY(-100%); }
+        .dark .sticky-header { background-color: #020617; }
+        
+        /* وضوح الكتابة في الدارك مود */
+        input, textarea, select { color: #0f172a; background-color: #ffffff; }
+        .dark input, .dark textarea, .dark select { color: #ffffff !important; background-color: #1e293b !important; border-color: #475569 !important; }
+
+        .done-check { width: 30px; height: 30px; border: 3px solid #cbd5e1; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: 0.2s; background: white; }
+        .done-check.active { background-color: #10b981; border-color: #10b981; }
+        .done-check.active::after { content: "✓"; color: white; font-weight: 900; font-size: 18px; }
+
+        .item-card { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); border-width: 2px; }
+        .item-card.is-done { background-color: #ecfdf5 !important; border-color: #10b981 !important; transform: scale(0.99); }
+        .dark .item-card.is-done { background-color: rgba(16, 185, 129, 0.1) !important; border-color: #10b981 !important; }
+
+        #search-suggestions { max-height: 300px; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.2); border-radius: 1.5rem; }
+        .suggestion-item { padding: 1rem 1.5rem; cursor: pointer; transition: 0.2s; border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .suggestion-item.active { background-color: #2563eb !important; color: white !important; }
+
+        .timer-card { background: var(--card); border-radius: 1.5rem; min-width: 240px; max-width: 300px; border: 1px solid var(--border); padding: 1rem; display: flex; align-items: center; gap: 1rem; flex-shrink: 0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .timer-num-box { background: rgba(0,0,0,0.03); border-radius: 1rem; padding: 0.5rem 1rem; text-align: center; flex-shrink: 0; }
+        .dark .timer-num-box { background: rgba(255,255,255,0.05); }
+
+        .section-title-black { color: #000000 !important; font-weight: 900 !important; text-align: center; }
+        .dark .section-title-black { color: #ffffff !important; }
+
+        .progress-container { width: 100%; background: #e2e8f0; border-radius: 99px; height: 12px; display: none; margin-top: 15px; overflow: hidden; border: 1px solid #cbd5e1; }
+        .progress-bar { height: 100%; background: linear-gradient(90deg, #2563eb, #3b82f6); width: 0%; transition: width 0.3s; }
+
+        .q-block { background: var(--bg); border: 2px solid var(--border); border-radius: 2rem; padding: 1.5rem; margin-bottom: 1.5rem; position: relative; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .opt-input.correct-opt { border-color: #10b981 !important; background: #ecfdf5 !important; color: #065f46 !important; }
+        .dark .opt-input.correct-opt { background: rgba(16, 185, 129, 0.2) !important; color: #34d399 !important; }
+
+        .action-btn-custom { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 14px; border-radius: 1.25rem; font-weight: 800; transition: 0.2s; width: 100%; border: 2px solid transparent; cursor: pointer; }
+        .btn-view { background-color: #2563eb; color: white; }
+        .btn-download { background-color: #f1f5f9; color: #475569; border-color: #e2e8f0; }
+        .dark .btn-download { background-color: #334155; color: #f8fafc; border-color: #475569; }
+
+        .audio-btn { background: #f1f5f9; border-radius: 12px; padding: 8px; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; transition: 0.2s; }
+        .dark .audio-btn { background: #334155; }
+        
+        .admin-step-card { background: var(--card); border: 2px solid var(--border); border-radius: 1.5rem; padding: 1.5rem; cursor: pointer; transition: 0.2s; text-align: center; font-weight: bold; }
+        .admin-step-card.active { background: #2563eb !important; color: white !important; }
+
+        .file-manager-item {
+            display: flex; align-items: center; justify-content: space-between; background: #f8fafc; padding: 10px 15px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 8px; font-size: 0.8rem;
+        }
+        .dark .file-manager-item { background: #1e293b; border-color: #334155; }
+    </style>
+</head>
+<body class="antialiased font-bold">
+
+    <div id="toast" class="toast"></div>
+
+    <!-- Smart Header -->
+    <nav id="site-header" class="sticky-header text-white pt-8 pb-4 px-6 shadow-2xl">
+        <div class="max-w-7xl mx-auto flex flex-col items-center gap-4 text-center">
+            <div class="flex items-center justify-between w-full max-w-4xl">
+                <button onclick="toggleDarkMode()" class="p-3 bg-white/10 rounded-2xl hover:bg-white/20 transition text-xl">🌙</button>
+                <div class="text-center group">
+                    <h1 class="text-3xl md:text-5xl font-black mb-1 transition group-hover:text-blue-400">جامعة دراية</h1>
+                    <div class="h-1 bg-blue-500 w-20 mx-auto rounded-full mb-1"></div>
+                    <p class="text-[10px] opacity-60 uppercase tracking-widest font-bold">Faculty of Pharmacy</p>
+                </div>
+                <div class="w-10"></div>
+            </div>
+            <div class="w-full max-w-2xl flex flex-col items-center gap-4 relative">
+                <div id="search-box-wrap" class="w-full relative">
+                    <input type="text" id="main-search" onkeydown="handleSearchNav(event)" oninput="handleSearch(this.value)" autocomplete="off" placeholder="ابحث عن مادة..." class="w-full bg-white/10 border border-white/20 rounded-2xl py-4 px-6 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 text-center font-bold text-xl">
+                    <div id="search-suggestions" class="hidden absolute top-full left-0 right-0 bg-white dark:bg-slate-800 rounded-2xl mt-3 z-[2000] overflow-hidden text-slate-800 dark:text-white text-right"></div>
+                </div>
+                <div id="selected-chip" class="hidden items-center bg-blue-600 text-white px-8 py-3 rounded-full font-black gap-4 animate-fadeIn shadow-xl">
+                    <span id="chip-text" class="text-xl"></span>
+                    <div onclick="clearSearch()" class="cursor-pointer bg-white/20 w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-500 transition font-black">✕</div>
+                </div>
+                <button onclick="showPage('home')" class="font-bold hover:text-blue-400 transition text-lg">الرئيسية</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-6 pt-8 pb-12 font-bold">
+        <!-- Home Section -->
+        <div id="page-home" class="space-y-16">
+            <section id="news-section-main">
+                <div class="flex items-center justify-center gap-4 mb-8"><div class="h-1 bg-slate-200 flex-grow max-w-[200px]"></div><h2 class="text-2xl font-black section-title-black">التنبيهات</h2><div class="h-1 bg-slate-200 flex-grow max-w-[200px]"></div></div>
+                <div id="news-container" class="grid gap-4 max-w-4xl mx-auto text-center font-bold"></div>
+            </section>
+            <section id="countdown-section-main">
+                <div class="flex items-center justify-center gap-4 mb-8 font-bold"><div class="h-1 bg-slate-200 flex-grow max-w-[200px]"></div><h2 class="text-2xl font-black section-title-black">Quiz Countdown</h2><div class="h-1 bg-slate-200 flex-grow max-w-[200px]"></div></div>
+                <div id="timers-container" class="flex gap-6 overflow-x-auto pb-8 scrollbar-hide px-4 font-bold"></div>
+            </section>
+            <section>
+                <div class="text-center mb-10">
+                    <h2 class="text-4xl md:text-5xl font-black mb-4 section-title-black">المقررات الدراسية</h2>
+                    <div class="h-2 w-24 bg-blue-600 mx-auto rounded-full"></div>
+                </div>
+                <div id="subjects-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10 font-bold"></div>
+            </section>
+        </div>
+
+        <!-- Choice Page -->
+        <div id="page-choice" class="hidden py-20 text-center space-y-12 animate-fadeIn font-bold">
+            <h2 id="choice-subj-title" class="text-4xl font-black section-title-black"></h2>
+            <div class="grid md:grid-cols-2 gap-10 max-w-4xl mx-auto font-bold">
+                <div onclick="openSubList('Lecture')" class="subject-card p-12 cursor-pointer">
+                    <div class="text-7xl mb-6">📚</div><h3 class="text-3xl font-black">المحاضرات</h3>
+                    <p class="opacity-40 text-lg font-bold">Lectures</p>
+                </div>
+                <div onclick="openSubList('Section')" class="subject-card p-12 cursor-pointer">
+                    <div class="text-7xl mb-6 font-bold">🧪</div><h3 class="text-3xl font-black font-bold">السكاشن</h3>
+                    <p class="opacity-40 text-lg font-bold">Sections</p>
+                </div>
+            </div>
+            <button onclick="showPage('home')" class="text-slate-400 underline text-lg font-bold">رجوع</button>
+        </div>
+
+        <!-- List Page -->
+        <div id="page-list" class="hidden space-y-8 animate-fadeIn font-bold">
+            <div class="bg-[var(--card)] p-12 rounded-[3.5rem] text-center border border-[var(--border)] shadow-sm">
+                <h2 id="list-title" class="text-4xl font-black mb-6 section-title-black"></h2>
+                <button onclick="showPage('home')" class="bg-blue-600 text-white px-10 py-3 rounded-full font-bold">الرئيسية</button>
+            </div>
+            <div id="items-list" class="grid gap-4 max-w-4xl mx-auto font-bold"></div>
+        </div>
+
+        <!-- Details Page -->
+        <div id="page-details" class="hidden p-10 bg-[var(--card)] rounded-[4rem] shadow-2xl border border-[var(--border)] relative text-center space-y-10 animate-fadeIn font-bold">
+            <div class="absolute top-0 left-0 w-full h-3 bg-blue-600 font-bold"></div>
+            <button onclick="backFromDetails()" class="text-blue-600 font-bold hover:underline mb-10 inline-block text-lg font-bold">← العودة للقائمة</button>
+            <h3 id="det-name" class="text-3xl font-black uppercase tracking-tighter section-title-black"></h3>
+            
+            <div id="content-grid" class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto font-bold">
+                <div class="p-8 bg-slate-50 dark:bg-slate-800/40 rounded-[3rem] border border-[var(--border)] flex flex-col items-center gap-6 font-bold">
+                    <div class="text-6xl font-bold">📄</div><h4 class="text-xl font-black">PDF Files</h4>
+                    <div id="pdf-actions-container" class="w-full space-y-3"></div>
+                    <p id="pdf-empty" class="status-badge font-bold">غير متوفر</p>
+                </div>
+                <div id="audio-box" class="p-8 bg-slate-50 dark:bg-slate-800/40 rounded-[3rem] border border-[var(--border)] flex flex-col items-center gap-6 font-bold">
+                    <div class="text-6xl font-bold">🎙️</div><h4 class="text-xl font-black font-bold">Recordings</h4>
+                    <audio id="player" controls class="w-full hidden mb-2"></audio>
+                    <div id="audio-custom-controls" class="w-full hidden flex flex-col gap-4">
+                        <div class="audio-controls-row">
+                            <button onclick="seekAudio(-10)" class="audio-btn">⏪</button>
+                            <select id="playback-speed" onchange="changeSpeed(this.value)" class="speed-select font-bold">
+                                <option value="1">1x</option><option value="1.25">1.25x</option><option value="1.5">1.5x</option><option value="2">2x</option>
+                            </select>
+                            <button onclick="seekAudio(10)" class="audio-btn">⏩</button>
+                        </div>
+                        <div id="audio-actions-container" class="w-full flex flex-col gap-3"></div>
+                    </div>
+                    <p id="player-empty" class="status-badge font-bold">غير متوفر</p>
+                </div>
+                <div id="quiz-box" class="p-8 bg-slate-50 dark:bg-slate-800/40 rounded-[3rem] border border-[var(--border)] flex flex-col items-center gap-6 font-bold">
+                    <div class="text-6xl font-bold">📝</div><h4 class="text-xl font-black">Quiz</h4>
+                    <button id="btn-start-quiz" onclick="runQuiz()" class="action-btn-custom btn-view opacity-20 pointer-events-none transition-all font-bold">ابدأ الاختبار</button>
+                    <p id="quiz-empty" class="status-badge hidden font-bold">لا يوجد اختبار</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin -->
+        <div id="page-admin" class="hidden space-y-12 py-20 border-t-4 border-dashed border-blue-200 animate-fadeIn font-bold">
+            <div class="flex items-center justify-between font-bold"><h2 class="text-4xl font-black text-blue-900 font-bold">لوحة الإدارة الكاملة</h2><button onclick="adminLogout()" class="bg-red-500 text-white px-8 py-3 rounded-xl font-bold shadow-lg">خروج آمن</button></div>
+            <div class="grid lg:grid-cols-2 gap-10 font-bold text-right">
+                <div class="space-y-10">
+                    <div class="bg-[var(--card)] p-10 rounded-[3rem] shadow-xl space-y-6">
+                        <h3 class="text-2xl font-black border-b pb-4 text-emerald-800 uppercase text-center font-bold">⏳ إدارة العدادات</h3>
+                        <div id="admin-timers-list" class="space-y-4 max-h-[400px] overflow-y-auto pr-2 font-bold font-bold"></div>
+                        <button onclick="finalSaveState()" class="w-full bg-emerald-600 text-white py-5 rounded-2xl font-bold shadow-lg font-bold">حفظ العدادات</button>
+                    </div>
+                </div>
+                <div class="bg-[var(--card)] p-10 rounded-[4rem] shadow-2xl space-y-10 border-4 border-blue-100 font-bold">
+                    <h3 class="text-3xl font-black text-blue-600 text-center uppercase tracking-tight font-bold">🚀 إدارة المحتوى (R2)</h3>
+                    <div id="adm-step-1" class="space-y-4"><h4 class="font-black text-slate-400 text-sm">1: اختر المادة</h4><div id="admin-subject-selector" class="grid grid-cols-2 gap-4"></div></div>
+                    <div id="adm-step-2" class="hidden space-y-4 animate-fadeIn font-bold"><h4 class="font-black text-slate-400 text-sm font-bold">2: النوع</h4><div class="flex gap-4 font-bold"><div id="adm-btn-lecture" onclick="selectAdminType('Lecture')" class="admin-step-card flex-grow">📚 محاضرة</div><div id="adm-btn-section" onclick="selectAdminType('Section')" class="admin-step-card flex-grow hidden font-bold">🧪 سكشن</div></div></div>
+                    <div id="adm-step-3" class="hidden space-y-4 animate-fadeIn font-bold font-bold"><h4 class="font-black text-slate-400 text-sm font-bold font-bold">3: الرقم</h4><div class="grid grid-cols-6 gap-2 font-bold" id="admin-num-grid"></div></div>
+                    <div id="adm-step-4" class="hidden space-y-8 animate-fadeIn border-t pt-8 font-bold">
+                        <h4 class="font-black text-blue-600 text-center text-xl mb-6 font-bold" id="adm-editor-title"></h4>
+                        <div id="admin-current-files" class="bg-slate-50 dark:bg-slate-900/30 p-6 rounded-2xl border-2 border-slate-200">
+                            <h5 class="font-black mb-4 text-xs opacity-60">الملفات المرفوعة حالياً:</h5>
+                            <div id="admin-files-list" class="space-y-2 font-bold"></div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 font-bold">
+                             <div class="p-6 bg-blue-50 dark:bg-blue-900/20 rounded-3xl border-2 border-blue-200 font-bold">
+                                 <h5 class="font-black text-blue-700 mb-3 font-bold">📄 إضافة PDF</h5>
+                                 <input type="file" id="up-pdf" class="text-xs w-full font-bold">
+                             </div>
+                             <div class="p-6 bg-emerald-50 dark:bg-emerald-900/20 rounded-3xl border-2 border-emerald-200 font-bold font-bold">
+                                 <h5 class="font-black text-emerald-700 mb-3 font-bold font-bold">🎙️ إضافة ريكورد</h5>
+                                 <input type="file" id="up-audio" class="text-xs w-full font-bold font-bold">
+                             </div>
+                        </div>
+                        <div class="bg-blue-50/30 dark:bg-slate-900/30 p-8 rounded-[3rem] border-2 border-blue-100 font-bold">
+                            <div class="flex justify-between items-center mb-6">
+                                <h5 class="font-black text-blue-700 font-bold">أسئلة الاختبار:</h5>
+                                <button onclick="addDynamicQuestion()" class="bg-blue-600 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg font-bold">+ سؤال</button>
+                            </div>
+                            <div id="admin-quiz-builder" class="space-y-6 max-h-[400px] overflow-y-auto font-bold font-bold"></div>
+                        </div>
+                        <div id="upload-progress-container" class="progress-container font-bold font-bold"><div id="upload-progress-bar" class="progress-bar font-bold font-bold"></div></div>
+                        <p id="upload-status-text" class="text-center text-sm font-bold text-blue-600 hidden font-bold">جاري الرفع...</p>
+                        <button onclick="handleFileUpload()" id="up-btn" class="w-full bg-blue-600 text-white py-6 rounded-[2rem] font-black text-2xl shadow-2xl hover:bg-blue-700 transition font-bold font-bold">حفظ وإضافة الملفات</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const WORKER_URL = "https://r2-uploader.ahmadatefeasa2006.workers.dev"; 
+        const branchedSubjs = ["Micro biology", "Bio biochemistry 2", "Pathology"];
+        let adminSelection = { sub: null, type: null, num: null };
+        let activeSuggestionIdx = -1, filteredSubjs = [];
+        let state = { subjects: [], news: [] };
+        let currentLectureData = { pdfs: [], audios: [], quiz: [] };
+        let lastScrollTop = 0;
+
+        // --- Smart Header Logic ---
+        window.addEventListener('scroll', () => {
+            let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const header = document.getElementById('site-header');
+            if (scrollTop > lastScrollTop && scrollTop > 150) {
+                header.classList.add('header-hidden');
+            } else {
+                header.classList.remove('header-hidden');
+            }
+            lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
+        });
+
+        // --- Core ---
+        async function syncData() {
+            try {
+                const res = await fetch(`${WORKER_URL}?data=site_state`);
+                const data = await res.json();
+                if(data && data.subjects) state = data;
+                renderApp(); restoreSession();
+            } catch(e) { renderApp(); restoreSession(); }
+        }
+
+        function saveSession(pId, prms = {}) { sessionStorage.setItem('currentView', JSON.stringify({ pId, prms, t: Date.now() })); }
+        async function restoreSession() {
+            const saved = sessionStorage.getItem('currentView');
+            if (!saved) return;
+            const { pId, prms } = JSON.parse(saved);
+            if (pId === 'choice') handleSubClick(prms.sub);
+            else if (pId === 'list') { window.currentSub = prms.sub; openSubList(prms.type); }
+            else if (pId === 'details') { window.currentSub = prms.sub; window.currentType = prms.type; openFinalDetails(prms.num); }
+            else if (pId === 'admin') showPage('admin');
+        }
+
+        function renderApp() {
+            const grid = document.getElementById('subjects-grid');
+            if(grid && state.subjects.length) grid.innerHTML = state.subjects.map(s => `<div onclick="handleSubClick('${s.name}')" class="subject-card shadow-lg animate-fadeIn cursor-pointer font-bold"><div class="h-48 overflow-hidden font-bold"><img src="${s.img}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"><div class="w-full h-full img-fallback hidden font-bold">💊</div></div><div class="p-6 text-center font-black text-xl font-bold font-bold">${s.name}</div></div>`).join('');
+            const timers = document.getElementById('timers-container');
+            if(timers) {
+                const sorted = [...state.subjects].sort((a,b) => a.days - b.days);
+                timers.innerHTML = sorted.map(s => {
+                    let color = 'text-emerald-600'; if(s.days <= 3) color = 'text-red-600'; else if(s.days <= 7) color = 'text-amber-500';
+                    return `<div class="timer-card shadow-sm font-bold"><div class="timer-num-box"><span class="text-4xl font-black ${color}">${s.days<10?'0'+s.days:s.days}</span></div><div class="text-sm font-black leading-tight break-words flex-grow font-bold font-bold">${s.name}</div></div>`;
+                }).join('');
+            }
+            const newsCont = document.getElementById('news-container');
+            if(newsCont) newsCont.innerHTML = state.news.map(n => `<div class="p-6 bg-[var(--card)] border-r-[10px] border-blue-600 shadow-sm rounded-2xl border border-[var(--border)] font-bold font-bold"><p class="text-lg font-bold">${n}</p></div>`).reverse().join('');
+            const timersAdmin = document.getElementById('admin-timers-list');
+            if(timersAdmin) timersAdmin.innerHTML = state.subjects.map((s, i) => `<div class="flex items-center justify-between p-4 bg-[var(--bg)] border rounded-2xl mb-2 font-bold font-bold font-bold"><input type="text" id="adm-n-${i}" value="${s.name}" class="bg-transparent border-b font-bold outline-none w-1/2 font-bold font-bold font-bold"><input type="number" id="adm-d-${i}" value="${s.days}" min="0" class="w-20 bg-white dark:bg-slate-700 rounded px-2 text-center text-blue-600 font-black font-bold"></div>`).join('');
+            renderAdminFlow();
+        }
+
+        function showPage(id) { document.querySelectorAll('main > div').forEach(e => e.classList.add('hidden')); const t = document.getElementById('page-'+id); if(t) t.classList.remove('hidden'); window.scrollTo(0,0); if(id === 'home') sessionStorage.removeItem('currentView'); else if(id === 'admin') saveSession('admin'); }
+
+        async function forceDownload(u, f) { try { showToast("جاري التحميل..."); const r = await fetch(u); const b = await r.blob(); const l = document.createElement('a'); l.href = URL.createObjectURL(b); l.download = f; l.click(); } catch(e) { showToast("فشل التحميل", "error"); } }
+        function seekAudio(s) { document.getElementById('player').currentTime += s; }
+        function changeSpeed(v) { document.getElementById('player').playbackRate = parseFloat(v); }
+
+        function handleSubClick(n) { window.currentSub = n; if(branchedSubjs.includes(n)) { showPage('choice'); document.getElementById('choice-subj-title').innerText = n; saveSession('choice', { sub: n }); } else openSubList('Lecture'); }
+        function openSubList(t) {
+            window.currentType = t; document.getElementById('list-title').innerText = window.currentSub + (t==='Lecture'?" - المحاضرات":" - السكاشن"); showPage('list'); saveSession('list', { sub: window.currentSub, type: t });
+            let h = '';
+            for(let i=1; i<=12; i++) {
+                const k = `done_${window.currentSub}_${t}_${i}`; const act = localStorage.getItem(k)==='true'?'active':'';
+                h += `<div id="item-${i}" onclick="openFinalDetails(${i})" class="item-card ${act?'is-done':''} bg-[var(--card)] p-6 rounded-2xl border-2 border-[var(--border)] flex justify-between items-center hover:border-blue-600 cursor-pointer shadow-sm group font-bold">
+                    <div class="flex items-center gap-4 font-bold font-bold"><div class="done-check ${act}" onclick="toggleDone(event, '${k}', ${i})"></div><span class="text-slate-400 text-3xl font-black">${i<10?'0'+i:i}</span><h4 class="text-xl font-bold font-bold font-bold">${t} ${i}</h4></div><span class="text-blue-600 font-bold font-bold">←</span></div>`;
+            }
+            document.getElementById('items-list').innerHTML = h;
+        }
+
+        function toggleDone(e, k, i) { e.stopPropagation(); const d = localStorage.getItem(k) !== 'true'; localStorage.setItem(k, d); e.target.classList.toggle('active'); const card = document.getElementById(`item-${i}`); if (card) d ? card.classList.add('is-done') : card.classList.remove('is-done'); showToast(d ? "عاش يا دكتور!" : "تم حذف الإنجاز"); }
+
+        async function openFinalDetails(num) {
+            showPage('details'); saveSession('details', { sub: window.currentSub, type: window.currentType, num: num });
+            document.getElementById('det-name').innerText = `${window.currentSub} - ${window.currentType} ${num}`;
+            const pdfCont = document.getElementById('pdf-actions-container'), audCont = document.getElementById('audio-actions-container'), audCustom = document.getElementById('audio-custom-controls'), qb = document.getElementById('btn-start-quiz'), ap = document.getElementById('player'), pe = document.getElementById('player-empty'), pde = document.getElementById('pdf-empty'), qe = document.getElementById('quiz-empty');
+            
+            [pdfCont, audCont, audCustom, ap].forEach(e => { e.innerHTML = ''; e.classList.add('hidden'); }); [pe, pde, qe].forEach(e => e.classList.remove('hidden'));
+            qb.classList.add('opacity-20', 'pointer-events-none');
+
+            try {
+                const id = `${window.currentSub}-${window.currentType}-${num}`.replace(/\s+/g, '-');
+                const res = await fetch(`${WORKER_URL}?data=content_${id}`);
+                const d = await res.json();
+                const pdfs = d.pdfs || (d.pdf ? [d.pdf] : []);
+                const audios = d.audios || (d.audio ? [d.audio] : []);
+
+                if(pdfs.length) {
+                    pde.classList.add('hidden'); pdfCont.classList.remove('hidden');
+                    pdfs.forEach((url, i) => {
+                        const row = document.createElement('div'); row.className = "flex gap-2";
+                        row.innerHTML = `<a href="${url}" target="_blank" class="action-btn-custom btn-view flex-1 text-xs font-bold">فتح ملف ${i+1}</a> <div onclick="forceDownload('${url}', '${window.currentSub}_${num}_file${i+1}.pdf')" class="action-btn-custom btn-download w-20 text-[10px] font-bold">تحميل</div>`;
+                        pdfCont.appendChild(row);
+                    });
+                }
+                if(audios.length) {
+                    pe.classList.add('hidden'); audCustom.classList.remove('hidden'); ap.classList.remove('hidden');
+                    ap.src = audios[0];
+                    const audList = document.getElementById('audio-actions-container');
+                    audios.forEach((url, i) => {
+                        const row = document.createElement('div'); row.className = "flex gap-2";
+                        row.innerHTML = `<div onclick="document.getElementById('player').src='${url}'; document.getElementById('player').play()" class="action-btn-custom btn-view flex-1 text-xs font-bold font-bold">تشغيل ريكورد ${i+1}</div> <div onclick="forceDownload('${url}', '${window.currentSub}_${num}_rec${i+1}.mp3')" class="action-btn-custom btn-download w-20 text-[10px] font-bold font-bold">تحميل</div>`;
+                        audList.appendChild(row);
+                    });
+                }
+                if(d.quiz && d.quiz.length) { activeQuizData = d.quiz; qb.classList.remove('opacity-20', 'pointer-events-none'); qe.classList.add('hidden'); }
+            } catch(e) {}
+        }
+
+        // --- Admin Manager ---
+        async function fetchAdminLectureData() {
+            const { sub: s, type: t, num: n } = adminSelection;
+            const id = `${s}-${t}-${n}`.replace(/\s+/g, '-');
+            const res = await fetch(`${WORKER_URL}?data=content_${id}`);
+            const d = await res.json();
+            currentLectureData = { pdfs: d.pdfs || (d.pdf ? [d.pdf] : []), audios: d.audios || (d.audio ? [d.audio] : []), quiz: d.quiz || [] };
+            renderAdminFilesList();
+            document.getElementById('admin-quiz-builder').innerHTML = '';
+            currentLectureData.quiz.forEach(q => addDynamicQuestion(q));
+        }
+
+        function renderAdminFilesList() {
+            const list = document.getElementById('admin-files-list'); list.innerHTML = '';
+            currentLectureData.pdfs.forEach((url, i) => { const div = document.createElement('div'); div.className = "file-manager-item font-bold"; div.innerHTML = `<span>📄 PDF File ${i+1}</span> <button onclick="deleteFile('pdfs', ${i})" class="text-red-500 font-bold">حذف ✕</button>`; list.appendChild(div); });
+            currentLectureData.audios.forEach((url, i) => { const div = document.createElement('div'); div.className = "file-manager-item font-bold"; div.innerHTML = `<span>🎙️ Record ${i+1}</span> <button onclick="deleteFile('audios', ${i})" class="text-red-500 font-bold">حذف ✕</button>`; list.appendChild(div); });
+            if(!currentLectureData.pdfs.length && !currentLectureData.audios.length) list.innerHTML = `<p class="text-[10px] opacity-40 text-center py-2">لا يوجد ملفات</p>`;
+        }
+
+        function deleteFile(type, idx) { if(!confirm("حذف؟")) return; currentLectureData[type].splice(idx, 1); renderAdminFilesList(); showToast("تم الحذف مؤقتاً (اضغط حفظ للتأكيد)"); }
+
+        async function handleFileUpload() {
+            const { sub: s, type: t, num: n } = adminSelection;
+            const pdfFile = document.getElementById('up-pdf').files[0], audioFile = document.getElementById('up-audio').files[0], qBlocks = document.getElementById('admin-quiz-builder').children;
+            if(!s || !n) return showToast("أكمل البيانات", "error");
+            const btn = document.getElementById('up-btn'); btn.disabled = true;
+            try {
+                if(pdfFile) { const fn = `f_${Date.now()}_${pdfFile.name}`; await uploadFile(pdfFile, fn); currentLectureData.pdfs.push(`${WORKER_URL}?file=${fn}`); }
+                if(audioFile) { const fn = `a_${Date.now()}_${audioFile.name}`; await uploadFile(audioFile, fn); currentLectureData.audios.push(`${WORKER_URL}?file=${fn}`); }
+                const quiz = [];
+                for(let b of qBlocks) {
+                    const text = b.querySelector('input').value, timer = parseInt(b.querySelectorAll('input')[1].value) || 30;
+                    const opts = Array.from(b.querySelectorAll('.opt-input')), options = opts.map(o => o.value), correct = opts.findIndex(o => o.classList.contains('correct-opt'));
+                    const imgInp = b.querySelector('.q-img-input').files[0];
+                    let qImgUrl = null; if(imgInp) { const ifn = `qi_${Date.now()}_${imgInp.name}`; await uploadFile(imgInp, ifn); qImgUrl = `${WORKER_URL}?file=${ifn}`; }
+                    if(text && correct > -1) quiz.push({ text, options, correct, timer, image: qImgUrl });
+                }
+                currentLectureData.quiz = quiz;
+                const id = `${s}-${t}-${n}`.replace(/\s+/g, '-');
+                await fetch(`${WORKER_URL}?data=content_${id}`, { method: 'POST', body: JSON.stringify(currentLectureData) });
+                showToast("تم الحفظ بنجاح!"); setTimeout(() => location.reload(), 1000);
+            } catch(e) { showToast("خطأ في التحميل"); btn.disabled = false; }
+        }
+
+        // --- Shared ---
+        function renderAdminFlow() { const s = document.getElementById('admin-subject-selector'); if(s) s.innerHTML = state.subjects.map(sub => `<div onclick="selectAdminSub('${sub.name}')" class="admin-step-card ${adminSelection.sub === sub.name ? 'active' : ''}">${sub.name}</div>`).join(''); const n = document.getElementById('admin-num-grid'); if(n) { n.innerHTML = ''; for(let i=1; i<=12; i++) { const btn = document.createElement('div'); btn.className = `admin-step-card p-2 text-xs ${adminSelection.num === i ? 'active' : ''}`; btn.innerText = i; btn.onclick = () => selectAdminNum(i); n.appendChild(btn); } } }
+        function selectAdminSub(n) { adminSelection.sub = n; adminSelection.type = null; adminSelection.num = null; document.getElementById('adm-step-2').classList.remove('hidden'); document.getElementById('adm-btn-section').classList.toggle('hidden', !branchedSubjs.includes(n)); renderAdminFlow(); }
+        function selectAdminType(t) { adminSelection.type = t; adminSelection.num = null; document.getElementById('adm-step-3').classList.remove('hidden'); renderAdminFlow(); }
+        function selectAdminNum(n) { adminSelection.num = n; document.getElementById('adm-step-4').classList.remove('hidden'); document.getElementById('adm-editor-title').innerText = `إدارة ${adminSelection.sub} - ${adminSelection.type} ${n}`; fetchAdminLectureData(); renderAdminFlow(); }
+        function addDynamicQuestion(qData = null) {
+            const builder = document.getElementById('admin-quiz-builder');
+            const qId = Date.now() + Math.random(); const div = document.createElement('div'); div.className = "q-block font-bold";
+            div.innerHTML = `<div class="flex gap-2 mb-3 font-bold"><input type="text" placeholder="السؤال" class="flex-grow p-2 rounded-lg border text-sm font-bold font-bold font-bold" value="${qData?qData.text:''}"> <input type="number" placeholder="ثواني" class="w-16 p-2 rounded-lg border text-center text-xs font-bold" value="${qData?qData.timer:30}"></div> <div class="mb-3"><input type="file" class="q-img-input text-[10px] font-bold"></div> <div class="options-container grid gap-2" id="opt-cont-${qId}"></div> <button onclick="addChoiceInput('opt-cont-${qId}')" class="mt-2 text-blue-600 text-[10px] font-black">+ إضافة اختيار</button> <button onclick="this.parentElement.remove()" class="absolute -top-2 -left-2 bg-red-500 text-white w-6 h-6 rounded-full text-[10px]">✕</button>`;
+            builder.appendChild(div);
+            if(qData && qData.options) qData.options.forEach((opt, idx) => addChoiceInput(`opt-cont-${qId}`, opt, idx === qData.correct)); else [1,2,3,4].forEach(() => addChoiceInput(`opt-cont-${qId}`));
+        }
+        function addChoiceInput(contId, val = '', isCorrect = false) { const cont = document.getElementById(contId); const div = document.createElement('div'); div.className = "relative flex items-center"; div.innerHTML = `<input type="text" placeholder="اختيار..." class="opt-input w-full p-2 pr-3 rounded-lg text-[10px] bg-white ${isCorrect?'correct-opt':''}" value="${val}" onclick="setCorrectChoice(this)"> <button onclick="this.parentElement.remove()" class="absolute left-1 text-slate-300 hover:text-red-500 font-bold">✕</button>`; cont.appendChild(div); }
+        function setCorrectChoice(el) { const cont = el.closest('.options-container'); cont.querySelectorAll('.opt-input').forEach(i => i.classList.remove('correct-opt')); el.classList.add('correct-opt'); }
+        async function uploadFile(file, name) { return new Promise((resolve, reject) => { const xhr = new XMLHttpRequest(); xhr.open("PUT", `${WORKER_URL}?file=${name}`); xhr.upload.onprogress = (e) => { if (e.lengthComputable) { const p = Math.round((e.loaded / e.total) * 100); document.getElementById('upload-progress-container').style.display = 'block'; document.getElementById('upload-status-text').style.display = 'block'; document.getElementById('upload-progress-bar').style.width = p + "%"; document.getElementById('upload-status-text').innerText = `جاري الرفع... ${p}%`; } }; xhr.onload = () => xhr.status === 200 ? resolve() : reject(); xhr.send(file); }); }
+        function toggleDarkMode() { document.body.classList.toggle('dark'); localStorage.setItem('theme', document.body.classList.contains('dark')?'dark':'light'); }
+        function handleSearchNav(e) { if (e.key === 'Enter') { const v = e.target.value.trim().toLowerCase(); if (v === 'ahmed2006') { showPage('admin'); e.target.value = ""; return; } if (activeSuggestionIdx > -1) selectS(filteredSubjs[activeSuggestionIdx].name); else if (filteredSubjs.length > 0) selectS(filteredSubjs[0].name); } else if (e.key === 'ArrowDown') { e.preventDefault(); activeSuggestionIdx = Math.min(activeSuggestionIdx + 1, filteredSubjs.length - 1); updateActiveSuggestion(); } else if (e.key === 'ArrowUp') { e.preventDefault(); activeSuggestionIdx = Math.max(activeSuggestionIdx - 1, -1); updateActiveSuggestion(); } }
+        function handleSearch(val) { const q = val.trim().toLowerCase(); const b = document.getElementById('search-suggestions'); if (!q) { b.classList.add('hidden'); return; } filteredSubjs = state.subjects.filter(s => s.name.toLowerCase().includes(q)); if (filteredSubjs.length > 0) { b.classList.remove('hidden'); activeSuggestionIdx = -1; b.innerHTML = filteredSubjs.map((s, i) => `<div id="sug-${i}" onclick="selectS('${s.name}')" class="suggestion-item font-black">${s.name}</div>`).join(''); } else { b.classList.add('hidden'); } }
+        function updateActiveSuggestion() { document.querySelectorAll('.suggestion-item').forEach((el, i) => { if (i === activeSuggestionIdx) el.classList.add('active'); else el.classList.remove('active'); }); }
+        function selectS(n) { document.getElementById('search-box-wrap').classList.add('hidden'); const c = document.getElementById('selected-chip'); c.classList.replace('hidden', 'flex'); document.getElementById('chip-text').innerText = n; document.getElementById('search-suggestions').classList.add('hidden'); handleSubClick(n); }
+        function clearSearch() { document.getElementById('search-box-wrap').classList.remove('hidden'); document.getElementById('selected-chip').classList.replace('flex', 'hidden'); document.getElementById('main-search').value = ""; showPage('home'); }
+        function showToast(m, t='success') { const toast = document.getElementById('toast'); toast.innerText = m; toast.style.backgroundColor = t==='success'?'#10b981':'#ef4444'; toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 3000); }
+        async function finalSaveState() { state.subjects.forEach((s, i) => { s.name = document.getElementById(`adm-n-${i}`).value; s.days = parseInt(document.getElementById(`adm-d-${i}`).value) || 0; }); await fetch(`${WORKER_URL}?data=site_state`, { method: 'POST', body: JSON.stringify(state) }); showToast("تم الحفظ"); renderApp(); }
+        function adminLogout() { sessionStorage.removeItem('currentView'); adminSelection = { sub: null, type: null, num: null }; showPage('home'); document.getElementById('main-search').value = ""; }
+        function backFromDetails() { openSubList(window.currentType); }
+
+        let qTimer, currentQIdx = 0, activeQuizData = [];
+        async function runQuiz() { if(!activeQuizData.length) return; currentQIdx = 0; document.getElementById('quiz-overlay').classList.remove('hidden'); loadQuestion(); }
+        function loadQuestion() {
+            if(currentQIdx >= activeQuizData.length) { alert("أحسنت يا دكتور!"); return stopQuiz(); }
+            const q = activeQuizData[currentQIdx];
+            document.getElementById('q-num').innerText = `السؤال ${currentQIdx + 1}`;
+            document.getElementById('q-text').innerText = q.text;
+            const imgWrap = document.getElementById('q-img-wrap'), imgEl = document.getElementById('q-img');
+            if(q.image) { imgWrap.classList.remove('hidden'); imgEl.src = q.image; } else imgWrap.classList.add('hidden');
+            document.getElementById('q-options').innerHTML = q.options.map((o, i) => `<button onclick="handleQAns(${i})" class="w-full p-4 border-2 border-slate-100 dark:border-slate-800 rounded-2xl hover:border-blue-600 transition font-bold text-lg">${o}</button>`).join('');
+            startQuestionTimer(q.timer || 30);
+        }
+        function startQuestionTimer(time) { clearInterval(qTimer); const tEl = document.getElementById('q-timer'), b = document.getElementById('quiz-progress'); let left = time; qTimer = setInterval(() => { left--; tEl.innerText = left; b.style.width = (left/time*100) + "%"; if(left<=0) handleQAns(-1); }, 1000); }
+        function handleQAns(idx) { clearInterval(qTimer); currentQIdx++; loadQuestion(); }
+        function stopQuiz() { document.getElementById('quiz-overlay').classList.add('hidden'); clearInterval(qTimer); }
+
+        window.onload = () => { if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark'); syncData(); };
+    </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بوابة صيدلة دراية - النسخة الاحترافية</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { --bg: #f8fafc; --text: #0f172a; --card: #ffffff; --border: #e2e8f0; }
+        .dark { --bg: #0f172a; --text: #f8fafc; --card: #1e293b; --border: #334155; }
+        body { font-family: 'Cairo', sans-serif; background-color: var(--bg); color: var(--text); transition: 0.3s; margin: 0; }
         .sticky-header { position: sticky; top: 0; z-index: 1000; background-color: #0f172a; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
         .dark .sticky-header { background-color: #020617; }
         
